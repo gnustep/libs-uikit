@@ -56,6 +56,27 @@ To build only the example application:
 make -C Examples
 ```
 
+## Building For Android
+
+The Android build uses the NDK CMake toolchain and builds the library target
+only. It expects GNUstep Base, GNUstep GUI, and libobjc to already be built for
+the same Android ABI and available in one prefix.
+
+```sh
+cmake -S . -B build-android \
+  -DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake" \
+  -DANDROID_ABI=arm64-v8a \
+  -DANDROID_PLATFORM=android-24 \
+  -DGNUSTEP_ANDROID_ROOT=/path/to/android-gnustep-prefix
+
+cmake --build build-android
+```
+
+`GNUSTEP_ANDROID_ROOT` should contain GNUstep headers under either
+`include/GNUstep` or `include`, and Android ABI libraries under either `lib` or
+`lib/<abi>`. If your Objective-C runtime is not libobjc2's GNUstep 2.0 runtime,
+override `UIKIT_ANDROID_OBJC_RUNTIME`.
+
 ## Running The Example
 
 After building, run the example application from the `Examples` directory using
