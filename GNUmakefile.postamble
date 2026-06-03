@@ -1,1 +1,11 @@
-# Project-specific top-level rules are intentionally empty.
+UIKIT_MAKEFILE = uikit.make
+UIKIT_MAKEFILE_INSTALL_DIR = $(GNUSTEP_MAKEFILES)/Additional
+
+internal-install::
+	$(ECHO_INSTALLING)$(MKINSTALLDIRS) $(UIKIT_MAKEFILE_INSTALL_DIR); \
+	  $(INSTALL_DATA) $(UIKIT_MAKEFILE) \
+	    $(UIKIT_MAKEFILE_INSTALL_DIR)/$(UIKIT_MAKEFILE)$(END_ECHO)
+
+internal-uninstall::
+	$(ECHO_UNINSTALLING)rm -f \
+	  $(UIKIT_MAKEFILE_INSTALL_DIR)/$(UIKIT_MAKEFILE)$(END_ECHO)
