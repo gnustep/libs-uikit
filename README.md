@@ -10,6 +10,15 @@ application/window management, views and view controllers, common controls,
 table/navigation/tab containers, images, colors, fonts, nib loading helpers, and
 basic device/screen abstractions.
 
+This is currently a POC which may have significant gaps with the actual UIKit.
+It illustrates that using AppKit to create some of the widgets needed for UIKit is
+possible.
+
+## AI Disclosure
+
+AI was used for some of the concepts of this library.  Particularly the repetative
+coding parts.
+
 ## Contents
 
 - `Headers/UIKit/` - public headers and the umbrella `UIKit.h` header.
