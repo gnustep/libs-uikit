@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document>
+  <objects>
+    <placeholder id="-1" placeholderIdentifier="IBFilesOwner" customClass="ExampleViewController">
+      <connections>
+        <outlet property="titleLabel" destination="title-label"/>
+        <outlet property="nameField" destination="name-field"/>
+        <outlet property="slider" destination="alpha-slider"/>
+        <outlet property="enabledSwitch" destination="enabled-switch"/>
+      </connections>
+    </placeholder>
+    <view id="root-view">
+      <rect key="frame" x="0" y="0" width="420" height="320"/>
+      <color key="backgroundColor" red="0.95" green="0.96" blue="0.97" alpha="1"/>
+      <subviews>
+        <label id="title-label" text="Hello, UIKit">
+          <rect key="frame" x="24" y="244" width="372" height="32"/>
+          <color key="textColor" red="0.08" green="0.09" blue="0.10" alpha="1"/>
+          <fontDescription key="fontDescription" pointSize="22"/>
+        </label>
+        <textField id="name-field" placeholder="Name">
+          <rect key="frame" x="24" y="196" width="240" height="30"/>
+        </textField>
+        <button id="hello-button">
+          <rect key="frame" x="280" y="194" width="116" height="34"/>
+          <state key="normal" title="Update"/>
+          <connections>
+            <action selector="buttonPressed:" destination="-1"/>
+          </connections>
+        </button>
+        <label id="slider-label" text="Title opacity">
+          <rect key="frame" x="24" y="144" width="120" height="24"/>
+          <fontDescription key="fontDescription" pointSize="13"/>
+        </label>
+        <slider id="alpha-slider" value="1">
+          <rect key="frame" x="150" y="142" width="246" height="24"/>
+          <connections>
+            <action selector="valueChanged:" destination="-1"/>
+          </connections>
+        </slider>
+        <label id="switch-label" text="Text field enabled">
+          <rect key="frame" x="24" y="96" width="160" height="24"/>
+          <fontDescription key="fontDescription" pointSize="13"/>
+        </label>
+        <switch id="enabled-switch" on="YES">
+          <rect key="frame" x="188" y="94" width="80" height="24"/>
+          <connections>
+            <action selector="valueChanged:" destination="-1"/>
+          </connections>
+        </switch>
+      </subviews>
+    </view>
+  </objects>
+</document>

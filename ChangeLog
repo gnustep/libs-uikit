@@ -1,0 +1,8 @@
+2011-02-07 Fred Kiefer <FredKiefer@gmx.de>
+
+	* Headers/UIResponder.h,
+	* Headers/UIView.h: Add headers for these two classes.
+	* Headers/UIEvent.h,
+	* Headers/UIScreen.h,
+	* Headers/UIWindow.h: Correct these class definitions.
+	* Headers/UIViewController.h; Remove AppKit import.
