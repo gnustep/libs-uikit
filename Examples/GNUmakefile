@@ -1,6 +1,8 @@
 include $(GNUSTEP_MAKEFILES)/common.make
 
 APP_NAME = UIKitExample OpenGLExample
+UIKitExample_LDFLAGS = -Wl,--disable-new-dtags -Wl,-rpath,$(CURDIR)/../Source/obj
+OpenGLExample_LDFLAGS = -Wl,--disable-new-dtags -Wl,-rpath,$(CURDIR)/../Source/obj
 
 UIKitExample_OBJC_FILES = main.m
 UIKitExample_RESOURCE_FILES = MainView.xib
