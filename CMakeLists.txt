@@ -94,6 +94,7 @@ add_library(libs-uikit SHARED
   Source/UITableViewCell.m
   Source/NSIndexPath+UIKit.m
   Source/UITableView.m
+  Source/UIOpenGLView.m
   Source/UINavigationItem.m
   Source/UINavigationController.m
   Source/UITabBarController.m

@@ -26,6 +26,7 @@ libs-uikit_OBJC_FILES = \
 	UITableViewCell.m \
 	NSIndexPath+UIKit.m \
 	UITableView.m \
+	UIOpenGLView.m \
 	UINavigationItem.m \
 	UINavigationController.m \
 	UITabBarController.m \
@@ -62,6 +63,7 @@ libs-uikit_HEADER_FILES = \
 	UITableViewCell.h \
 	NSIndexPath+UIKit.h \
 	UITableView.h \
+	UIOpenGLView.h \
 	UINavigationItem.h \
 	UINavigationController.h \
 	UITabBarController.h \

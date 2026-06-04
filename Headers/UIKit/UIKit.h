@@ -27,6 +27,7 @@ extern "C" {
 #import <UIKit/UITableViewCell.h>
 #import <UIKit/NSIndexPath+UIKit.h>
 #import <UIKit/UITableView.h>
+#import <UIKit/UIOpenGLView.h>
 #import <UIKit/UINavigationItem.h>
 #import <UIKit/UINavigationController.h>
 #import <UIKit/UITabBarController.h>
