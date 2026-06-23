@@ -17,8 +17,15 @@
 - (UIViewController *)selectedViewController { return _selectedViewController; }
 - (void)setSelectedViewController:(UIViewController *)selectedViewController
 {
+  UIViewController *oldController = _selectedViewController;
+  if (oldController == selectedViewController)
+    return;
+  [oldController viewWillDisappear:NO];
+  [selectedViewController viewWillAppear:NO];
   ASSIGN(_selectedViewController, selectedViewController);
   if (selectedViewController != nil)
     [self setView:[selectedViewController view]];
+  [oldController viewDidDisappear:NO];
+  [selectedViewController viewDidAppear:NO];
 }
 @end

@@ -13,6 +13,7 @@
   UIViewContentMode _contentMode;
   UIViewAutoresizing _uiAutoresizingMask;
   NSInteger _tag;
+  BOOL _uiNeedsLayout;
 }
 - (id)initWithFrame:(CGRect)frame;
 - (CGRect)frame;
@@ -40,6 +41,7 @@
 - (UIView *)viewWithTag:(NSInteger)tag;
 - (void)setNeedsDisplay;
 - (void)setNeedsLayout;
+- (void)layoutIfNeeded;
 - (void)layoutSubviews;
 @end
 

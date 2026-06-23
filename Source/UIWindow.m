@@ -21,9 +21,16 @@
 - (UIViewController *)rootViewController { return _rootViewController; }
 - (void)setRootViewController:(UIViewController *)controller
 {
+  UIViewController *oldController = _rootViewController;
+  if (oldController == controller)
+    return;
+  [oldController viewWillDisappear:NO];
+  [controller viewWillAppear:NO];
   ASSIGN(_rootViewController, controller);
   if (controller != nil)
     [self setContentView:(NSView *)[controller view]];
+  [oldController viewDidDisappear:NO];
+  [controller viewDidAppear:NO];
 }
 - (void)makeKeyAndVisible
 {

@@ -61,9 +61,30 @@ enum {
 typedef unsigned int UIControlEvents;
 enum {
   UIControlEventTouchDown = 1 << 0,
+  UIControlEventTouchDownRepeat = 1 << 1,
+  UIControlEventTouchDragInside = 1 << 2,
+  UIControlEventTouchDragOutside = 1 << 3,
+  UIControlEventTouchDragEnter = 1 << 4,
+  UIControlEventTouchDragExit = 1 << 5,
   UIControlEventTouchUpInside = 1 << 6,
+  UIControlEventTouchUpOutside = 1 << 7,
+  UIControlEventTouchCancel = 1 << 8,
   UIControlEventValueChanged = 1 << 12,
+  UIControlEventEditingDidBegin = 1 << 16,
+  UIControlEventEditingChanged = 1 << 17,
+  UIControlEventEditingDidEnd = 1 << 18,
+  UIControlEventEditingDidEndOnExit = 1 << 19,
+  UIControlEventAllTouchEvents = 0x00000fff,
+  UIControlEventAllEditingEvents = 0x000f0000,
   UIControlEventAllEvents = 0xffffffff
+};
+
+typedef int UITableViewCellSelectionStyle;
+enum {
+  UITableViewCellSelectionStyleNone = 0,
+  UITableViewCellSelectionStyleBlue = 1,
+  UITableViewCellSelectionStyleGray = 2,
+  UITableViewCellSelectionStyleDefault = 3
 };
 
 typedef int UIKeyboardType;

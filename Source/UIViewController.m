@@ -35,6 +35,8 @@
 - (void)viewDidLoad {}
 - (void)viewWillAppear:(BOOL)animated {}
 - (void)viewDidAppear:(BOOL)animated {}
+- (void)viewWillDisappear:(BOOL)animated {}
+- (void)viewDidDisappear:(BOOL)animated {}
 - (NSString *)title { return _title; }
 - (void)setTitle:(NSString *)title { ASSIGNCOPY(_title, title); }
 @end

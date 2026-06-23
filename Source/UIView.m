@@ -85,10 +85,29 @@
   return nil;
 }
 - (void)setNeedsDisplay { [super setNeedsDisplay:YES]; }
-- (void)setNeedsLayout { [self layoutSubviews]; }
+- (void)setNeedsLayout
+{
+  _uiNeedsLayout = YES;
+  [super setNeedsDisplay:YES];
+}
+- (void)layoutIfNeeded
+{
+  if (_uiNeedsLayout)
+    {
+      _uiNeedsLayout = NO;
+      [self layoutSubviews];
+    }
+}
 - (void)layoutSubviews {}
+- (void)resizeSubviewsWithOldSize:(NSSize)oldSize
+{
+  [super resizeSubviewsWithOldSize:oldSize];
+  [self setNeedsLayout];
+  [self layoutIfNeeded];
+}
 - (void)drawRect:(NSRect)rect
 {
+  [self layoutIfNeeded];
   if (_backgroundColor != nil)
     {
       [[_backgroundColor NSColor] set];
