@@ -7,6 +7,10 @@
 #endif
 
 @interface OpenGLDemoView : UIOpenGLView
+{
+  NSTimer *_animationTimer;
+  GLfloat _rotationAngle;
+}
 @end
 
 @implementation OpenGLDemoView
@@ -27,15 +31,41 @@
   if (self != nil)
     {
       [self setAutoresizingMask:(NSViewWidthSizable | NSViewHeightSizable)];
+      _animationTimer = [[NSTimer scheduledTimerWithTimeInterval:(1.0 / 60.0)
+                                                          target:self
+                                                        selector:@selector(advanceAnimation:)
+                                                        userInfo:nil
+                                                         repeats:YES] retain];
     }
 
   return self;
+}
+
+- (void)dealloc
+{
+  [_animationTimer invalidate];
+  [_animationTimer release];
+  [super dealloc];
 }
 
 - (void)prepareOpenGL
 {
   [super prepareOpenGL];
   glClearColor(0.07f, 0.09f, 0.12f, 1.0f);
+  glEnable(GL_DEPTH_TEST);
+  glDepthFunc(GL_LEQUAL);
+  glShadeModel(GL_SMOOTH);
+}
+
+- (void)advanceAnimation:(NSTimer *)timer
+{
+  (void)timer;
+
+  _rotationAngle += 1.0f;
+  if (_rotationAngle >= 360.0f)
+    _rotationAngle -= 360.0f;
+
+  [self setNeedsDisplay:YES];
 }
 
 - (void)reshape
@@ -61,18 +91,61 @@
 
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
+  {
+    NSRect bounds = [self bounds];
+    GLdouble width = NSWidth(bounds);
+    GLdouble height = NSHeight(bounds);
+    GLdouble aspect = (height > 0.0) ? (width / height) : 1.0;
+    GLdouble nearPlane = 1.0;
+    GLdouble farPlane = 20.0;
+    GLdouble top = 0.58;
+    GLdouble right = top * aspect;
+
+    glFrustum(-right, right, -top, top, nearPlane, farPlane);
+  }
 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
+  glTranslatef(0.0f, 0.0f, -4.0f);
+  glRotatef(_rotationAngle, 1.0f, 1.0f, 0.0f);
+  glRotatef(_rotationAngle * 0.6f, 0.0f, 1.0f, 1.0f);
 
-  glBegin(GL_TRIANGLES);
-    glColor3f(0.95f, 0.27f, 0.22f);
-    glVertex2f(0.0f, 0.72f);
-    glColor3f(0.16f, 0.68f, 0.92f);
-    glVertex2f(-0.72f, -0.54f);
-    glColor3f(0.30f, 0.78f, 0.38f);
-    glVertex2f(0.72f, -0.54f);
+  glBegin(GL_QUADS);
+    glColor3f(0.95f, 0.18f, 0.16f);
+    glVertex3f(-1.0f, -1.0f,  1.0f);
+    glVertex3f( 1.0f, -1.0f,  1.0f);
+    glVertex3f( 1.0f,  1.0f,  1.0f);
+    glVertex3f(-1.0f,  1.0f,  1.0f);
+
+    glColor3f(0.16f, 0.47f, 0.95f);
+    glVertex3f( 1.0f, -1.0f, -1.0f);
+    glVertex3f(-1.0f, -1.0f, -1.0f);
+    glVertex3f(-1.0f,  1.0f, -1.0f);
+    glVertex3f( 1.0f,  1.0f, -1.0f);
+
+    glColor3f(0.18f, 0.78f, 0.32f);
+    glVertex3f(-1.0f,  1.0f,  1.0f);
+    glVertex3f( 1.0f,  1.0f,  1.0f);
+    glVertex3f( 1.0f,  1.0f, -1.0f);
+    glVertex3f(-1.0f,  1.0f, -1.0f);
+
+    glColor3f(0.98f, 0.74f, 0.18f);
+    glVertex3f(-1.0f, -1.0f, -1.0f);
+    glVertex3f( 1.0f, -1.0f, -1.0f);
+    glVertex3f( 1.0f, -1.0f,  1.0f);
+    glVertex3f(-1.0f, -1.0f,  1.0f);
+
+    glColor3f(0.82f, 0.26f, 0.88f);
+    glVertex3f( 1.0f, -1.0f,  1.0f);
+    glVertex3f( 1.0f, -1.0f, -1.0f);
+    glVertex3f( 1.0f,  1.0f, -1.0f);
+    glVertex3f( 1.0f,  1.0f,  1.0f);
+
+    glColor3f(0.12f, 0.78f, 0.82f);
+    glVertex3f(-1.0f, -1.0f, -1.0f);
+    glVertex3f(-1.0f, -1.0f,  1.0f);
+    glVertex3f(-1.0f,  1.0f,  1.0f);
+    glVertex3f(-1.0f,  1.0f, -1.0f);
   glEnd();
 
   glFlush();
