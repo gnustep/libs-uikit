@@ -29,6 +29,16 @@ typedef void (*UIKitLockFocusIMP)(id, SEL, NSGraphicsContext *, NSRect);
     }
 }
 
+- (void)_prepareOpenGLIfNeeded
+{
+  if (!prepared)
+    {
+      prepared = YES;
+      [self prepareOpenGL];
+      [self reshape];
+    }
+}
+
 - (void)viewDidMoveToWindow
 {
   [super viewDidMoveToWindow];
@@ -41,6 +51,12 @@ typedef void (*UIKitLockFocusIMP)(id, SEL, NSGraphicsContext *, NSRect);
     }
 
   [self _attachOpenGLContextIfPossible];
+  if ([self makeCurrentOpenGLContext])
+    {
+      [self update];
+      [self reshape];
+      [self setNeedsDisplay:YES];
+    }
 }
 
 - (void)_frameChanged:(NSNotification *)notification
@@ -65,12 +81,7 @@ typedef void (*UIKitLockFocusIMP)(id, SEL, NSGraphicsContext *, NSRect);
   if ([self makeCurrentOpenGLContext] == NO)
     return;
 
-  if (!prepared)
-    {
-      [self prepareOpenGL];
-      prepared = YES;
-      [self reshape];
-    }
+  [self _prepareOpenGLIfNeeded];
 }
 
 - (void)update
@@ -107,6 +118,9 @@ typedef void (*UIKitLockFocusIMP)(id, SEL, NSGraphicsContext *, NSRect);
       madeCurrent = NO;
     }
   NS_ENDHANDLER
+
+  if (madeCurrent)
+    [self _prepareOpenGLIfNeeded];
 
   return madeCurrent;
 }
