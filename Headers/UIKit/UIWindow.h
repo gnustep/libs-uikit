@@ -3,13 +3,16 @@
 
 #import <UIKit/UIKitTypes.h>
 
-@class UIView, UIViewController;
+@class UIView, UIViewController, UIWindowScene;
 
 @interface UIWindow : NSWindow
 {
   UIViewController *_rootViewController;
+  UIWindowScene *_windowScene;
 }
 - (id)initWithFrame:(CGRect)frame;
+- (UIWindowScene *)windowScene;
+- (void)setWindowScene:(UIWindowScene *)windowScene;
 - (UIViewController *)rootViewController;
 - (void)setRootViewController:(UIViewController *)controller;
 - (void)makeKeyAndVisible;

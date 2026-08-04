@@ -7,7 +7,15 @@ extern "C" {
 
 #import <UIKit/UIKitTypes.h>
 #import <UIKit/UIResponder.h>
+#import <UIKit/UIEvent.h>
+#import <UIKit/UITouch.h>
+#import <UIKit/UIPress.h>
+#import <UIKit/UIPressesEvent.h>
 #import <UIKit/UIApplication.h>
+#import <UIKit/UISceneConfiguration.h>
+#import <UIKit/UISceneSession.h>
+#import <UIKit/UIScene.h>
+#import <UIKit/UIWindowScene.h>
 #import <UIKit/UIView.h>
 #import <UIKit/UIWindow.h>
 #import <UIKit/UIViewController.h>

@@ -6,7 +6,15 @@ LIBRARY_NAME = libs-uikit
 
 libs-uikit_OBJC_FILES = \
 	UIResponder.m \
+	UIEvent.m \
+	UITouch.m \
+	UIPress.m \
+	UIPressesEvent.m \
 	UIApplication.m \
+	UISceneConfiguration.m \
+	UISceneSession.m \
+	UIScene.m \
+	UIWindowScene.m \
 	UIView.m \
 	UIWindow.m \
 	UIViewController.m \
@@ -48,7 +56,15 @@ libs-uikit_HEADER_FILES = \
 	UIKit.h \
 	UIKitTypes.h \
 	UIResponder.h \
+	UIEvent.h \
+	UITouch.h \
+	UIPress.h \
+	UIPressesEvent.h \
 	UIApplication.h \
+	UISceneConfiguration.h \
+	UISceneSession.h \
+	UIScene.h \
+	UIWindowScene.h \
 	UIView.h \
 	UIWindow.h \
 	UIViewController.h \

@@ -3,7 +3,7 @@
 
 #import <UIKit/UIResponder.h>
 
-@class UIApplication, UIWindow;
+@class UIApplication, UIEvent, UIScene, UISceneSession, UIWindow;
 
 extern NSString *UIApplicationDidFinishLaunchingNotification;
 extern NSString *UIApplicationWillTerminateNotification;
@@ -16,13 +16,17 @@ extern NSString *UIApplicationWillTerminateNotification;
 {
   id _delegate;
   NSMutableArray *_windows;
+  NSMutableSet *_connectedScenes;
+  NSMutableSet *_openSessions;
 }
 + (UIApplication *)sharedApplication;
 - (id)delegate;
 - (void)setDelegate:(id)delegate;
 - (NSArray *)windows;
+- (NSSet *)connectedScenes;
+- (NSSet *)openSessions;
 - (void)addWindow:(UIWindow *)window;
-- (void)sendEvent:(NSEvent *)event;
+- (void)sendEvent:(UIEvent *)event;
 - (void)terminate:(id)sender;
 @end
 
