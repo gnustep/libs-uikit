@@ -121,4 +121,37 @@ enum {
   UIInterfaceOrientationLandscapeRight = 4
 };
 
+typedef int UICollectionViewScrollDirection;
+enum {
+  UICollectionViewScrollDirectionVertical = 0,
+  UICollectionViewScrollDirectionHorizontal = 1
+};
+
+typedef int UILayoutConstraintAxis;
+enum {
+  UILayoutConstraintAxisHorizontal = 0,
+  UILayoutConstraintAxisVertical = 1
+};
+
+typedef int UIStackViewAlignment;
+enum {
+  UIStackViewAlignmentFill = 0,
+  UIStackViewAlignmentLeading = 1,
+  UIStackViewAlignmentTop = UIStackViewAlignmentLeading,
+  UIStackViewAlignmentFirstBaseline = 2,
+  UIStackViewAlignmentCenter = 3,
+  UIStackViewAlignmentTrailing = 4,
+  UIStackViewAlignmentBottom = UIStackViewAlignmentTrailing,
+  UIStackViewAlignmentLastBaseline = 5
+};
+
+typedef int UIStackViewDistribution;
+enum {
+  UIStackViewDistributionFill = 0,
+  UIStackViewDistributionFillEqually = 1,
+  UIStackViewDistributionFillProportionally = 2,
+  UIStackViewDistributionEqualSpacing = 3,
+  UIStackViewDistributionEqualCentering = 4
+};
+
 #endif

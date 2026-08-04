@@ -26,6 +26,11 @@ libs-uikit_OBJC_FILES = \
 	UITableViewCell.m \
 	NSIndexPath+UIKit.m \
 	UITableView.m \
+	UICollectionViewCell.m \
+	UICollectionViewLayout.m \
+	UICollectionViewFlowLayout.m \
+	UICollectionView.m \
+	UIStackView.m \
 	UIOpenGLView.m \
 	UINavigationItem.m \
 	UINavigationController.m \
@@ -63,6 +68,11 @@ libs-uikit_HEADER_FILES = \
 	UITableViewCell.h \
 	NSIndexPath+UIKit.h \
 	UITableView.h \
+	UICollectionViewCell.h \
+	UICollectionViewLayout.h \
+	UICollectionViewFlowLayout.h \
+	UICollectionView.h \
+	UIStackView.h \
 	UIOpenGLView.h \
 	UINavigationItem.h \
 	UINavigationController.h \

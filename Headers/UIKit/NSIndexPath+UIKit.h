@@ -5,7 +5,10 @@
 
 @interface NSIndexPath (UIKit)
 + (NSIndexPath *)indexPathForRow:(NSInteger)row inSection:(NSInteger)section;
++ (NSIndexPath *)indexPathForItem:(NSInteger)item inSection:(NSInteger)section;
+- (NSInteger)section;
 - (NSInteger)row;
+- (NSInteger)item;
 @end
 
 #endif
