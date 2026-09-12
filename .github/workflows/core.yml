@@ -1,0 +1,17 @@
+name: UIKit core
+on: [push, pull_request]
+jobs:
+  gnustep:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install GNUstep and headless backend
+        run: sudo apt-get update && sudo apt-get install -y clang libgnustep-gui-dev gnustep-back0.29-cairo xvfb xauth cmake
+      - name: Check standalone public headers
+        run: Tests/check-headers.sh
+      - name: Build library with GNUstep Make
+        run: make
+      - name: Build with CMake
+        run: cmake -S . -B build -DCMAKE_OBJC_COMPILER=/usr/bin/clang && cmake --build build --parallel 2
+      - name: Run GUI regressions
+        run: xvfb-run -a ctest --test-dir build --output-on-failure

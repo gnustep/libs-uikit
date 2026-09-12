@@ -10,8 +10,28 @@
   UIView *_view;
   NSString *_title;
   NSArray *_nibTopLevelObjects;
+  NSString *_nibName;
+  NSBundle *_nibBundle;
+  NSMutableArray *_childViewControllers;
+  UIViewController *_parentViewController;
+  BOOL _viewLoaded;
+  BOOL _appearing;
+  BOOL _appearanceAnimated;
+  BOOL _visible;
 }
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
+- (BOOL)isViewLoaded;
+- (void)loadViewIfNeeded;
+- (UIViewController *)parentViewController;
+- (NSArray *)childViewControllers;
+- (void)addChildViewController:(UIViewController *)controller;
+- (void)removeFromParentViewController;
+- (void)willMoveToParentViewController:(UIViewController *)parent;
+- (void)didMoveToParentViewController:(UIViewController *)parent;
+- (void)beginAppearanceTransition:(BOOL)appearing animated:(BOOL)animated;
+- (void)endAppearanceTransition;
+- (BOOL)_isVisible;
+- (NSArray *)_appearanceChildren;
 - (UIView *)view;
 - (void)setView:(UIView *)view;
 - (void)loadView;

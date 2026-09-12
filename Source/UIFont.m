@@ -19,5 +19,8 @@
   [_font release];
   [super dealloc];
 }
+- (CGFloat)pointSize { return [_font pointSize]; }
+- (NSString *)fontName { return [_font fontName]; }
+- (CGFloat)lineHeight { return [_font ascender] - [_font descender] + [_font leading]; }
 - (NSFont *)NSFont { return _font; }
 @end

@@ -24,11 +24,14 @@ NSString *UIApplicationWillTerminateNotification = @"UIApplicationWillTerminateN
       _windows = [[NSMutableArray alloc] init];
       _connectedScenes = [[NSMutableSet alloc] init];
       _openSessions = [[NSMutableSet alloc] init];
+      [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_nativeActivation:) name:NSApplicationDidBecomeActiveNotification object:nil];
+      [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_nativeActivation:) name:NSApplicationWillResignActiveNotification object:nil];
     }
   return self;
 }
 - (void)dealloc
 {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
   [_windows release];
   [_connectedScenes release];
   [_openSessions release];
@@ -59,7 +62,7 @@ NSString *UIApplicationWillTerminateNotification = @"UIApplicationWillTerminateN
   session = [[[UISceneSession alloc] initWithRole:UISceneSessionRoleApplication
                                     configuration:configuration] autorelease];
   windowScene = [[[UIWindowScene alloc] initWithSession:session] autorelease];
-  [windowScene setActivationState:UISceneActivationStateForegroundActive];
+  [windowScene setActivationState:UISceneActivationStateForegroundInactive];
   [_openSessions addObject:session];
   [_connectedScenes addObject:windowScene];
   return windowScene;
@@ -74,7 +77,27 @@ NSString *UIApplicationWillTerminateNotification = @"UIApplicationWillTerminateN
       [[window windowScene] addWindow:window];
     }
 }
-- (void)sendEvent:(NSEvent *)event
+- (void)removeWindow:(UIWindow *)window
+{
+  [[window retain] autorelease];
+  UIWindowScene *scene = [[[window windowScene] retain] autorelease];
+  [window setWindowScene:nil];
+  [_windows removeObjectIdenticalTo:window];
+  if (scene && [[scene windows] count] == 0) {
+    [scene setActivationState:UISceneActivationStateUnattached];
+    [_openSessions removeObject:[scene session]];
+    [_connectedScenes removeObject:scene];
+  }
+}
+- (void)_nativeActivation:(NSNotification *)notification
+{
+  BOOL active = [[notification name] isEqual:NSApplicationDidBecomeActiveNotification];
+  for (UIScene *scene in [[_connectedScenes copy] autorelease])
+    [scene setActivationState:active ? UISceneActivationStateForegroundActive : UISceneActivationStateForegroundInactive];
+  SEL selector = active ? @selector(applicationDidBecomeActive:) : @selector(applicationWillResignActive:);
+  if ([_delegate respondsToSelector:selector]) [_delegate performSelector:selector withObject:self];
+}
+- (void)sendEvent:(UIEvent *)event
 {
   NSEvent *nativeEvent = nil;
 
@@ -101,14 +124,8 @@ int UIApplicationMain(int argc, char **argv, NSString *principalClassName, NSStr
   id delegate;
 
   [NSApplication sharedApplication];
-  application = [UIApplication sharedApplication];
-
-  if (principalClassName != nil)
-    {
-      Class principalClass = NSClassFromString(principalClassName);
-      if (principalClass != Nil && principalClass != [UIApplication class])
-        application = (UIApplication *)[principalClass sharedApplication];
-    }
+  Class applicationClass = principalClassName ? NSClassFromString(principalClassName) : [UIApplication class];
+  application = [applicationClass sharedApplication];
 
   delegateClass = delegateClassName == nil ? Nil : NSClassFromString(delegateClassName);
   if (delegateClass != Nil)
@@ -117,8 +134,10 @@ int UIApplicationMain(int argc, char **argv, NSString *principalClassName, NSStr
       [application setDelegate:delegate];
     }
 
-  if ([[application delegate] respondsToSelector:@selector(applicationDidFinishLaunching:)])
-    [[application delegate] applicationDidFinishLaunching:application];
+  if ([[application delegate] respondsToSelector:@selector(application:didFinishLaunchingWithOptions:)])
+    [(id<UIApplicationDelegate>)[application delegate] application:application didFinishLaunchingWithOptions:nil];
+  else if ([[application delegate] respondsToSelector:@selector(applicationDidFinishLaunching:)])
+    [(id<UIApplicationDelegate>)[application delegate] applicationDidFinishLaunching:application];
 
   [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidFinishLaunchingNotification object:application];
   [NSApp run];

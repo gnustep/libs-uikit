@@ -9,12 +9,13 @@
       _textField = [[NSTextField alloc] initWithFrame:[self bounds]];
       [_textField setAutoresizingMask:(NSViewWidthSizable | NSViewHeightSizable)];
       [_textField setBordered:NO];
+      [_textField setBezeled:NO];
       [_textField setEditable:NO];
       [_textField setDrawsBackground:NO];
       [_textField setSelectable:NO];
       [(NSView *)self addSubview:_textField];
       _textAlignment = NSTextAlignmentLeft;
-      _numberOfLines = 1;
+      [self setNumberOfLines:1];
     }
   return self;
 }
@@ -36,5 +37,30 @@
   [_textField setAlignment:(NSTextAlignment)alignment];
 }
 - (NSInteger)numberOfLines { return _numberOfLines; }
-- (void)setNumberOfLines:(NSInteger)numberOfLines { _numberOfLines = numberOfLines; }
+- (void)setNumberOfLines:(NSInteger)numberOfLines
+{
+  _numberOfLines = MAX(0, numberOfLines);
+  [[_textField cell] setWraps:_numberOfLines != 1];
+  [[_textField cell] setUsesSingleLineMode:_numberOfLines == 1];
+  if ([_textField respondsToSelector:@selector(setMaximumNumberOfLines:)])
+    [(id)_textField setMaximumNumberOfLines:_numberOfLines];
+  [self setNeedsLayout];
+}
+- (CGSize)sizeThatFits:(CGSize)size
+{
+  NSDictionary *attributes = [NSDictionary dictionaryWithObject:[_textField font] forKey:NSFontAttributeName];
+  CGFloat width = _numberOfLines == 1 ? 1000000 : MAX(1, size.width);
+  CGRect measured = [[self text] boundingRectWithSize:CGSizeMake(width, 1000000)
+    options:NSStringDrawingUsesLineFragmentOrigin attributes:attributes];
+  CGFloat height = ceil(measured.size.height);
+  if (_numberOfLines > 0) height = MIN(height, _numberOfLines * ceil([[self font] lineHeight]));
+  return CGSizeMake(ceil(measured.size.width), height);
+}
+- (void)layoutSubviews
+{
+  [super layoutSubviews];
+  CGRect frame = [self bounds];
+  if (_numberOfLines > 0) frame.size.height = MIN(frame.size.height, _numberOfLines * ceil([[self font] lineHeight]) + 2);
+  [_textField setFrame:frame];
+}
 @end

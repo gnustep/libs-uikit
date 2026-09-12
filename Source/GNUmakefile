@@ -1,60 +1,25 @@
+ifeq ($(GNUSTEP_MAKEFILES),)
+ GNUSTEP_MAKEFILES := $(shell gnustep-config --variable=GNUSTEP_MAKEFILES 2>/dev/null)
+endif
+
 PACKAGE_NAME = libs-uikit
 
 include $(GNUSTEP_MAKEFILES)/common.make
 
 LIBRARY_NAME = libs-uikit
+libs-uikit_VERSION = 0.1.0
+libs-uikit_INTERFACE_VERSION = 0
 
-libs-uikit_OBJC_FILES = \
-	UIResponder.m \
-	UIEvent.m \
-	UITouch.m \
-	UIPress.m \
-	UIPressesEvent.m \
-	UIApplication.m \
-	UISceneConfiguration.m \
-	UISceneSession.m \
-	UIScene.m \
-	UIWindowScene.m \
-	UIView.m \
-	UIWindow.m \
-	UIViewController.m \
-	UIColor.m \
-	UIImage.m \
-	UIFont.m \
-	UILabel.m \
-	UIImageView.m \
-	UIControl.m \
-	UIButton.m \
-	UITextField.m \
-	UITextView.m \
-	UISlider.m \
-	UISwitch.m \
-	UISegmentedControl.m \
-	UIScrollView.m \
-	UITableViewCell.m \
-	NSIndexPath+UIKit.m \
-	UITableView.m \
-	UICollectionViewCell.m \
-	UICollectionViewLayout.m \
-	UICollectionViewFlowLayout.m \
-	UICollectionView.m \
-	UIStackView.m \
-	UIOpenGLView.m \
-	UINavigationItem.m \
-	UINavigationController.m \
-	UITabBarController.m \
-	UIActivityIndicatorView.m \
-	UIAlertView.m \
-	UIScreen.m \
-	UIDevice.m \
-	UINib.m \
-	NSBundle+UIKit.m
+libs-uikit_OBJC_FILES = $(shell cat Sources.list)
 
 libs-uikit_HEADER_FILES_DIR = ../Headers/UIKit
 libs-uikit_HEADER_FILES_INSTALL_DIR = /UIKit
 libs-uikit_HEADER_FILES = \
 	UIKit.h \
 	UIKitTypes.h \
+	UIGestureRecognizer.h \
+	UITapGestureRecognizer.h \
+	UIPanGestureRecognizer.h \
 	UIResponder.h \
 	UIEvent.h \
 	UITouch.h \

@@ -4,13 +4,18 @@
 #import <UIKit/UIScrollView.h>
 #import <UIKit/UITableViewCell.h>
 
+@class UITableView;
+
 @protocol UITableViewDataSource
-- (NSInteger)tableView:(id)tableView numberOfRowsInSection:(NSInteger)section;
-- (UITableViewCell *)tableView:(id)tableView cellForRowAtIndexPath:(id)indexPath;
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section;
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;
+@optional
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView;
 @end
 
 @protocol UITableViewDelegate
-- (void)tableView:(id)tableView didSelectRowAtIndexPath:(id)indexPath;
+@optional
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath;
 @end
 
 @interface UITableView : UIScrollView
@@ -21,7 +26,12 @@
   NSMutableDictionary *_reusableCells;
   CGFloat _rowHeight;
   NSIndexPath *_selectedIndexPath;
+  NSMutableDictionary *_cellsByIndexPath;
+  NSMutableDictionary *_registeredCellClasses;
+  NSArray *_sectionRows;
+  BOOL _reloading;
 }
+- (id)initWithFrame:(CGRect)frame style:(UITableViewStyle)style;
 - (id)dataSource;
 - (void)setDataSource:(id)dataSource;
 - (id)delegate;
@@ -29,6 +39,14 @@
 - (CGFloat)rowHeight;
 - (void)setRowHeight:(CGFloat)rowHeight;
 - (UITableViewCell *)dequeueReusableCellWithIdentifier:(NSString *)identifier;
+- (void)registerClass:(Class)cellClass forCellReuseIdentifier:(NSString *)identifier;
+- (UITableViewCell *)dequeueReusableCellWithIdentifier:(NSString *)identifier forIndexPath:(NSIndexPath *)indexPath;
+- (NSInteger)numberOfSections;
+- (NSInteger)numberOfRowsInSection:(NSInteger)section;
+- (NSArray *)visibleCells;
+- (NSArray *)indexPathsForVisibleRows;
+- (NSIndexPath *)indexPathForCell:(UITableViewCell *)cell;
+- (CGRect)rectForRowAtIndexPath:(NSIndexPath *)indexPath;
 - (void)reloadData;
 - (NSIndexPath *)indexPathForSelectedRow;
 - (UITableViewCell *)cellForRowAtIndexPath:(NSIndexPath *)indexPath;

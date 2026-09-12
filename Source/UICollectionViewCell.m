@@ -71,6 +71,7 @@ UICollectionViewCellSubviewOrdering(id left, id right, void *context)
       [self sortSubviewsUsingFunction:UICollectionViewCellSubviewOrdering context:self];
     }
 }
+- (void)_setReuseIdentifier:(NSString *)identifier { ASSIGNCOPY(_reuseIdentifier, identifier); }
 - (NSString *)reuseIdentifier { return _reuseIdentifier; }
 - (BOOL)isSelected { return _selected; }
 - (void)setSelected:(BOOL)selected

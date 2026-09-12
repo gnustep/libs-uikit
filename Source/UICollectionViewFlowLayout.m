@@ -45,96 +45,47 @@ UIKitEdgeInsetsZero(void)
 - (void)setScrollDirection:(UICollectionViewScrollDirection)scrollDirection { _scrollDirection = scrollDirection; [self invalidateLayout]; }
 - (void)prepareLayout
 {
-  UICollectionView *collectionView = [self collectionView];
-  NSInteger section = 0;
-  NSInteger itemCount = 0;
-  CGFloat x;
-  CGFloat y;
-  CGFloat lineExtent = 0;
-  CGFloat maxX = 0;
-  CGFloat maxY = 0;
-  NSInteger item;
-
+  UICollectionView *collection = [self collectionView];
   [_layoutAttributes removeAllObjects];
-  if (collectionView == nil || [collectionView dataSource] == nil)
-    {
-      _contentSize = CGSizeZero;
-      return;
+  BOOL vertical = _scrollDirection == UICollectionViewScrollDirectionVertical;
+  CGFloat crossLimit = vertical ? [collection bounds].size.width : [collection bounds].size.height;
+  CGFloat main = 0, maxCross = crossLimit;
+  for (NSInteger section = 0; section < [collection numberOfSections]; section++) {
+    CGFloat leading = vertical ? _sectionInset.left : _sectionInset.top;
+    CGFloat trailing = vertical ? _sectionInset.right : _sectionInset.bottom;
+    CGFloat itemCross = vertical ? _itemSize.width : _itemSize.height;
+    CGFloat itemMain = vertical ? _itemSize.height : _itemSize.width;
+    CGFloat cross = leading;
+    main += vertical ? _sectionInset.top : _sectionInset.left;
+    NSInteger count = [collection numberOfItemsInSection:section];
+    for (NSInteger item = 0; item < count; item++) {
+      if (item > 0 && cross > leading && cross + itemCross + trailing > crossLimit) {
+        cross = leading; main += itemMain + _minimumLineSpacing;
+      }
+      NSIndexPath *path = [NSIndexPath indexPathForItem:item inSection:section];
+      UICollectionViewLayoutAttributes *attribute = [UICollectionViewLayoutAttributes layoutAttributesForCellWithIndexPath:path];
+      [attribute setFrame:vertical ? CGRectMake(cross, main, _itemSize.width, _itemSize.height) : CGRectMake(main, cross, _itemSize.width, _itemSize.height)];
+      [_layoutAttributes addObject:attribute];
+      maxCross = MAX(maxCross, cross + itemCross + trailing);
+      cross += itemCross + _minimumInteritemSpacing;
     }
-
-  if ([[collectionView dataSource] respondsToSelector:@selector(collectionView:numberOfItemsInSection:)])
-    itemCount = [[collectionView dataSource] collectionView:collectionView numberOfItemsInSection:section];
-
-  x = _sectionInset.left;
-  y = _sectionInset.top;
-  lineExtent = (_scrollDirection == UICollectionViewScrollDirectionVertical) ? _itemSize.height : _itemSize.width;
-
-  for (item = 0; item < itemCount; item++)
-    {
-      CGRect frame;
-      NSIndexPath *indexPath;
-      UICollectionViewLayoutAttributes *attributes;
-
-      if (_scrollDirection == UICollectionViewScrollDirectionVertical)
-        {
-          if (x > _sectionInset.left && x + _itemSize.width + _sectionInset.right > NSWidth([collectionView bounds]))
-            {
-              x = _sectionInset.left;
-              y += lineExtent + _minimumLineSpacing;
-              lineExtent = _itemSize.height;
-            }
-        }
-      else
-        {
-          if (y > _sectionInset.top && y + _itemSize.height + _sectionInset.bottom > NSHeight([collectionView bounds]))
-            {
-              y = _sectionInset.top;
-              x += lineExtent + _minimumLineSpacing;
-              lineExtent = _itemSize.width;
-            }
-        }
-
-      frame = NSMakeRect(x, y, _itemSize.width, _itemSize.height);
-      indexPath = [NSIndexPath indexPathForItem:item inSection:section];
-      attributes = [UICollectionViewLayoutAttributes layoutAttributesForCellWithIndexPath:indexPath];
-      [attributes setFrame:frame];
-      [_layoutAttributes addObject:attributes];
-
-      maxX = MAX(maxX, NSMaxX(frame));
-      maxY = MAX(maxY, NSMaxY(frame));
-
-      if (_scrollDirection == UICollectionViewScrollDirectionVertical)
-        x += _itemSize.width + _minimumInteritemSpacing;
-      else
-        y += _itemSize.height + _minimumInteritemSpacing;
-    }
-
-  _contentSize = NSMakeSize(maxX + _sectionInset.right, maxY + _sectionInset.bottom);
-  _contentSize.width = MAX(_contentSize.width, NSWidth([collectionView bounds]));
-  _contentSize.height = MAX(_contentSize.height, NSHeight([collectionView bounds]));
+    if (count) main += itemMain;
+    main += vertical ? _sectionInset.bottom : _sectionInset.right;
+  }
+  _contentSize = vertical ? CGSizeMake(maxCross, main) : CGSizeMake(main, maxCross);
 }
 - (CGSize)collectionViewContentSize { return _contentSize; }
 - (NSArray *)layoutAttributesForElementsInRect:(CGRect)rect
 {
-  NSMutableArray *matches = [NSMutableArray array];
-  NSEnumerator *enumerator = [_layoutAttributes objectEnumerator];
-  UICollectionViewLayoutAttributes *attributes;
-
-  while ((attributes = [enumerator nextObject]) != nil)
-    if (NSIntersectsRect([attributes frame], rect))
-      [matches addObject:attributes];
-
-  return matches;
+  NSMutableArray *result = [NSMutableArray array];
+  for (UICollectionViewLayoutAttributes *attribute in _layoutAttributes)
+    if (NSIntersectsRect(rect, [attribute frame])) [result addObject:attribute];
+  return result;
 }
-- (UICollectionViewLayoutAttributes *)layoutAttributesForItemAtIndexPath:(NSIndexPath *)indexPath
+- (UICollectionViewLayoutAttributes *)layoutAttributesForItemAtIndexPath:(NSIndexPath *)path
 {
-  NSEnumerator *enumerator = [_layoutAttributes objectEnumerator];
-  UICollectionViewLayoutAttributes *attributes;
-
-  while ((attributes = [enumerator nextObject]) != nil)
-    if ([[attributes indexPath] isEqual:indexPath])
-      return attributes;
-
+  for (UICollectionViewLayoutAttributes *attribute in _layoutAttributes)
+    if ([[attribute indexPath] isEqual:path]) return attribute;
   return nil;
 }
 @end

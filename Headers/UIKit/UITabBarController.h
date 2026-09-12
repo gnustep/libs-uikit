@@ -7,7 +7,11 @@
 {
   NSArray *_viewControllers;
   UIViewController *_selectedViewController;
+  UIView *_contentHost;
+  id _tabControl;
 }
+- (NSUInteger)selectedIndex;
+- (void)setSelectedIndex:(NSUInteger)index;
 - (NSArray *)viewControllers;
 - (void)setViewControllers:(NSArray *)viewControllers;
 - (UIViewController *)selectedViewController;

@@ -9,3 +9,7 @@ internal-install::
 internal-uninstall::
 	$(ECHO_UNINSTALLING)rm -f \
 	  $(UIKIT_MAKEFILE_INSTALL_DIR)/$(UIKIT_MAKEFILE)$(END_ECHO)
+
+.PHONY: test
+test:
+	./Tests/run.sh

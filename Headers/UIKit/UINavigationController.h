@@ -6,10 +6,14 @@
 @interface UINavigationController : UIViewController
 {
   NSMutableArray *_viewControllers;
+  UIView *_contentHost;
+  id _backButton;
+  id _titleLabel;
 }
 - (id)initWithRootViewController:(UIViewController *)rootViewController;
 - (NSArray *)viewControllers;
 - (UIViewController *)topViewController;
+- (void)setViewControllers:(NSArray *)controllers animated:(BOOL)animated;
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated;
 - (UIViewController *)popViewControllerAnimated:(BOOL)animated;
 @end

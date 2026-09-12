@@ -38,9 +38,18 @@
   if (segment > count)
     segment = count;
   [_segmentedControl setSegmentCount:count + 1];
+  for (NSInteger index = count; index > (NSInteger)segment; index--)
+    [_segmentedControl setLabel:[_segmentedControl labelForSegment:index - 1] forSegment:index];
   [_segmentedControl setLabel:(title == nil ? @"" : title) forSegment:segment];
 }
 - (NSString *)titleForSegmentAtIndex:(NSUInteger)segment { return [_segmentedControl labelForSegment:segment]; }
 - (NSInteger)selectedSegmentIndex { return [_segmentedControl selectedSegment]; }
-- (void)setSelectedSegmentIndex:(NSInteger)selectedSegmentIndex { [_segmentedControl setSelectedSegment:selectedSegmentIndex]; }
+- (void)setSelectedSegmentIndex:(NSInteger)index
+{
+  if (index < -1 || index >= [_segmentedControl segmentCount])
+    [NSException raise:NSRangeException format:@"Invalid segment index"];
+  for (NSInteger segment = 0; segment < [_segmentedControl segmentCount]; segment++)
+    [_segmentedControl setSelected:segment == index forSegment:segment];
+}
+- (void)setEnabled:(BOOL)enabled { [super setEnabled:enabled]; [_segmentedControl setEnabled:enabled]; }
 @end

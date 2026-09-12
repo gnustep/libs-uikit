@@ -6,6 +6,7 @@
 @interface UIButton : UIControl
 {
   NSButton *_button;
+  NSMutableDictionary *_titles;
 }
 + (UIButton *)buttonWithType:(int)buttonType;
 - (void)setTitle:(NSString *)title forState:(UIControlState)state;

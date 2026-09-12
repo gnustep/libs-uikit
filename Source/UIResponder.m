@@ -4,15 +4,26 @@
 - (BOOL)canBecomeFirstResponder { return NO; }
 - (BOOL)becomeFirstResponder
 {
+  if (_uiChangingFirstResponder) return YES;
   if ([self canBecomeFirstResponder] == NO || NSApp == nil || [NSApp keyWindow] == nil)
     return NO;
-  return [[NSApp keyWindow] makeFirstResponder:(NSResponder *)self];
+  if ([[NSApp keyWindow] firstResponder] == self) return YES;
+  _uiChangingFirstResponder = YES;
+  BOOL result;
+  @try { result = [[NSApp keyWindow] makeFirstResponder:self]; }
+  @finally { _uiChangingFirstResponder = NO; }
+  return result;
 }
 - (BOOL)resignFirstResponder
 {
+  if (_uiChangingFirstResponder) return YES;
   if (NSApp == nil || [NSApp keyWindow] == nil || [[NSApp keyWindow] firstResponder] != (NSResponder *)self)
     return YES;
-  return [[NSApp keyWindow] makeFirstResponder:nil];
+  _uiChangingFirstResponder = YES;
+  BOOL result;
+  @try { result = [[NSApp keyWindow] makeFirstResponder:nil]; }
+  @finally { _uiChangingFirstResponder = NO; }
+  return result;
 }
-- (UIResponder *)nextResponder { return nil; }
+- (UIResponder *)nextResponder { return (UIResponder *)[super nextResponder]; }
 @end

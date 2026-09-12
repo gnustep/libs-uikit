@@ -6,13 +6,18 @@
 #import <UIKit/UICollectionViewLayout.h>
 #import <UIKit/UICollectionViewFlowLayout.h>
 
+@class UICollectionView;
+
 @protocol UICollectionViewDataSource
-- (NSInteger)collectionView:(id)collectionView numberOfItemsInSection:(NSInteger)section;
-- (UICollectionViewCell *)collectionView:(id)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath;
+- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section;
+- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath;
+@optional
+- (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView;
 @end
 
 @protocol UICollectionViewDelegate
-- (void)collectionView:(id)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath;
+@optional
+- (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath;
 @end
 
 @interface UICollectionView : UIScrollView
@@ -24,6 +29,9 @@
   NSMutableDictionary *_reusableCells;
   NSMutableDictionary *_registeredCellClasses;
   NSIndexPath *_selectedIndexPath;
+  NSMutableDictionary *_cellsByIndexPath;
+  BOOL _reloading;
+  CGSize _layoutSize;
 }
 - (id)initWithFrame:(CGRect)frame collectionViewLayout:(UICollectionViewLayout *)layout;
 - (id)dataSource;
@@ -34,6 +42,9 @@
 - (void)setCollectionViewLayout:(UICollectionViewLayout *)layout;
 - (void)registerClass:(Class)cellClass forCellWithReuseIdentifier:(NSString *)identifier;
 - (UICollectionViewCell *)dequeueReusableCellWithReuseIdentifier:(NSString *)identifier forIndexPath:(NSIndexPath *)indexPath;
+- (NSInteger)numberOfSections;
+- (NSInteger)numberOfItemsInSection:(NSInteger)section;
+- (NSArray *)indexPathsForSelectedItems;
 - (void)reloadData;
 - (NSIndexPath *)indexPathForCell:(UICollectionViewCell *)cell;
 - (UICollectionViewCell *)cellForItemAtIndexPath:(NSIndexPath *)indexPath;

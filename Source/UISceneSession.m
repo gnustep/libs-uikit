@@ -21,7 +21,6 @@ NSString *UISceneSessionRoleExternalDisplay = @"UIWindowSceneSessionRoleExternal
 {
   [_role release];
   [_configuration release];
-  [_scene release];
   [_userInfo release];
   [_persistentIdentifier release];
   [super dealloc];
@@ -29,7 +28,7 @@ NSString *UISceneSessionRoleExternalDisplay = @"UIWindowSceneSessionRoleExternal
 - (NSString *)role { return _role; }
 - (UISceneConfiguration *)configuration { return _configuration; }
 - (UIScene *)scene { return _scene; }
-- (void)setScene:(UIScene *)scene { ASSIGN(_scene, scene); }
+- (void)setScene:(UIScene *)scene { _scene = scene; }
 - (NSDictionary *)userInfo { return _userInfo; }
 - (void)setUserInfo:(NSDictionary *)userInfo { ASSIGNCOPY(_userInfo, userInfo); }
 - (NSString *)persistentIdentifier { return _persistentIdentifier; }

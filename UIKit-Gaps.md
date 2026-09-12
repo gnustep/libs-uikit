@@ -6,6 +6,10 @@ repository and the major UIKit class families that are not implemented yet.
 `libs-uikit` is intentionally a focused UIKit-like compatibility layer on top of
 GNUstep/AppKit. It is not currently a complete UIKit clone.
 
+See [the 0.1 core coverage matrix](RELEASE-MILESTONE-1.md) for behavior verified
+by tests and the release gates that remain. A public header does not imply full
+UIKit compatibility.
+
 ## Current Public Surface
 
 The current implementation exposes these public UIKit-style headers through
@@ -36,17 +40,11 @@ the public implementation. The lists are representative, not exhaustive.
 
 ### App Lifecycle, Events, and Scenes
 
-- `UIEvent`
-- `UITouch`
-- `UIPress`
-- `UIPressesEvent`
-- `UIScene`
-- `UIWindowScene`
-- `UISceneSession`
-- `UISceneConfiguration`
-
-The current implementation has `UIApplication`, `UIWindow`, and `UIResponder`,
-but does not expose UIKit's event object model or modern scene lifecycle.
+`UIEvent`, `UITouch`, `UIPress`, `UIPressesEvent`, `UIScene`, `UIWindowScene`,
+`UISceneSession`, and `UISceneConfiguration` are present. The desktop core now
+tracks mouse-backed touches through UIView and delivers basic scene state
+callbacks. These are partial implementations: multitouch, keyboard/focus delivery,
+independent scene sessions, restoration, and mobile lifecycle services remain.
 
 ### View Controllers and Presentation
 
@@ -98,9 +96,6 @@ absent.
 
 ### Gesture Recognizers and Interactions
 
-- `UIGestureRecognizer`
-- `UITapGestureRecognizer`
-- `UIPanGestureRecognizer`
 - `UISwipeGestureRecognizer`
 - `UILongPressGestureRecognizer`
 - `UIPinchGestureRecognizer`
@@ -111,8 +106,10 @@ absent.
 - `UIPointerInteraction`
 - `UIFocusGuide`
 
-The current implementation does not expose UIKit's gesture recognizer system or
-modern interaction APIs.
+The desktop core provides basic `UIGestureRecognizer`, `UITapGestureRecognizer`,
+and `UIPanGestureRecognizer` support on UIView content. Multitouch, recognizer
+arbitration/failure dependencies, native-control interception, and the interaction
+APIs above remain unimplemented.
 
 ### Layout, Traits, and Appearance
 

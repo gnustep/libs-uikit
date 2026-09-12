@@ -2,3 +2,5 @@ obj
 *.app
 *.o
 *.d
+build/
+build-*/

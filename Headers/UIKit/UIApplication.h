@@ -9,6 +9,10 @@ extern NSString *UIApplicationDidFinishLaunchingNotification;
 extern NSString *UIApplicationWillTerminateNotification;
 
 @protocol UIApplicationDelegate
+@optional
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)options;
+- (void)applicationDidBecomeActive:(UIApplication *)application;
+- (void)applicationWillResignActive:(UIApplication *)application;
 - (void)applicationDidFinishLaunching:(UIApplication *)application;
 @end
 
@@ -26,6 +30,7 @@ extern NSString *UIApplicationWillTerminateNotification;
 - (NSSet *)connectedScenes;
 - (NSSet *)openSessions;
 - (void)addWindow:(UIWindow *)window;
+- (void)removeWindow:(UIWindow *)window;
 - (void)sendEvent:(UIEvent *)event;
 - (void)terminate:(id)sender;
 @end

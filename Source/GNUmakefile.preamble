@@ -49,7 +49,7 @@ ADDITIONAL_CPPFLAGS += -DBACKEND_BUNDLE=1
 endif
 
 # Additional flags to pass to the Objective-C compiler
-ADDITIONAL_OBJCFLAGS = -Wall
+ADDITIONAL_OBJCFLAGS = -Wall -std=gnu11
 
 # Additional flags to pass to the C compiler
 # ADDITIONAL_CFLAGS =

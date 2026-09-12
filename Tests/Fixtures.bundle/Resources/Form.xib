@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<document><objects>
+<placeholder id="owner" placeholderIdentifier="IBFilesOwner"><connections>
+<outlet property="view" destination="root"/>
+<outlet property="button" destination="button"/>
+</connections></placeholder>
+<view id="root"><rect key="frame" x="0" y="0" width="320" height="240"/>
+<subviews><button id="button"><rect key="frame" x="20" y="20" width="100" height="30"/>
+<state key="normal" title="Save"/><connections><action selector="save:" destination="owner" eventType="touchUpInside"/></connections>
+</button></subviews></view>
+</objects></document>

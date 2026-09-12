@@ -31,7 +31,7 @@
       _locationInWindow = location;
       _previousLocationInWindow = location;
       _window = [window retain];
-      _view = [view retain];
+      _view = view;
       _phase = phase;
       _tapCount = tapCount;
       _timestamp = timestamp;
@@ -41,7 +41,6 @@
 - (void)dealloc
 {
   [_window release];
-  [_view release];
   [_NSEvent release];
   [super dealloc];
 }
@@ -64,6 +63,12 @@
 - (CGPoint)previousLocationInView:(UIView *)view
 {
   return [self _location:_previousLocationInWindow inView:view];
+}
+- (void)_updateWithNSEvent:(NSEvent *)event phase:(UITouchPhase)phase
+{
+  _previousLocationInWindow = _locationInWindow;
+  _locationInWindow = [event locationInWindow]; _timestamp = [event timestamp]; _phase = phase;
+  ASSIGN(_NSEvent, event);
 }
 - (NSEvent *)NSEvent { return _NSEvent; }
 @end

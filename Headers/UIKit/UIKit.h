@@ -55,4 +55,8 @@ extern "C" {
 }
 #endif
 
+#import <UIKit/UIGestureRecognizer.h>
+#import <UIKit/UITapGestureRecognizer.h>
+#import <UIKit/UIPanGestureRecognizer.h>
+
 #endif

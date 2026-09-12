@@ -57,6 +57,12 @@
     }
   return self;
 }
+- (id)_initWithTouch:(UITouch *)touch nativeEvent:(NSEvent *)event
+{
+  self = [self initWithType:UIEventTypeTouches subtype:UIEventSubtypeNone timestamp:[event timestamp]];
+  if (self) { _allTouches = [[NSSet alloc] initWithObjects:touch, nil]; _NSEvent = [event retain]; }
+  return self;
+}
 - (void)dealloc
 {
   [_allTouches release];

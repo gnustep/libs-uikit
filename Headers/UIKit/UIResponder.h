@@ -3,8 +3,9 @@
 
 #import <UIKit/UIKitTypes.h>
 
-@interface UIResponder : NSObject
+@interface UIResponder : NSResponder
 {
+  BOOL _uiChangingFirstResponder;
 }
 - (BOOL)canBecomeFirstResponder;
 - (BOOL)becomeFirstResponder;

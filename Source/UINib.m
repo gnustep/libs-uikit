@@ -5,6 +5,7 @@
   id _owner;
   NSBundle *_bundle;
   NSMutableArray *_objectStack;
+  NSMutableArray *_elementStack;
   NSMutableArray *_topLevelObjects;
   NSMutableDictionary *_objectsByID;
   NSMutableArray *_pendingOutlets;
@@ -23,6 +24,7 @@
       _owner = owner;
       _bundle = [bundle retain];
       _objectStack = [[NSMutableArray alloc] init];
+      _elementStack = [[NSMutableArray alloc] init];
       _topLevelObjects = [[NSMutableArray alloc] init];
       _objectsByID = [[NSMutableDictionary alloc] init];
       _pendingOutlets = [[NSMutableArray alloc] init];
@@ -33,7 +35,7 @@
 - (void)dealloc
 {
   [_bundle release];
-  [_objectStack release];
+  [_objectStack release]; [_elementStack release];
   [_topLevelObjects release];
   [_objectsByID release];
   [_pendingOutlets release];
@@ -197,10 +199,7 @@
 
       if (source != nil && destination != nil && property != nil)
         {
-          NS_DURING
-            [source setValue:destination forKey:property];
-          NS_HANDLER
-          NS_ENDHANDLER
+          [source setValue:destination forKey:property];
         }
     }
 
@@ -212,7 +211,7 @@
       SEL selector = NSSelectorFromString([connection objectForKey:@"selector"]);
 
       if ([source isKindOfClass:[UIControl class]] && destination != nil && selector != NULL)
-        [(UIControl *)source addTarget:destination action:selector forControlEvents:UIControlEventTouchUpInside | UIControlEventValueChanged];
+        [(UIControl *)source addTarget:destination action:selector forControlEvents:[[connection objectForKey:@"events"] unsignedIntValue]];
     }
 }
 - (NSArray *)parseFile:(NSString *)path
@@ -226,7 +225,7 @@
   parser = [[[NSXMLParser alloc] initWithData:data] autorelease];
   [parser setDelegate:self];
   if ([parser parse] == NO)
-    return [NSArray array];
+    [NSException raise:NSInvalidArgumentException format:@"Invalid XIB %@: %@", path, [parser parserError]];
 
   [self _connectPendingReferences];
 
@@ -244,11 +243,14 @@
         }
     }
 
+  for (id object in [_objectsByID allValues])
+    if (object != _owner && [object respondsToSelector:@selector(awakeFromNib)]) [object awakeFromNib];
   return _topLevelObjects;
 }
 - (void)parser:(NSXMLParser *)parser didStartElement:(NSString *)elementName namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qualifiedName attributes:(NSDictionary *)attributeDict
 {
   id parent = [_objectStack lastObject];
+  [_elementStack addObject:[NSNull null]];
 
   if ([self _isObjectElement:elementName attributes:attributeDict])
     {
@@ -260,6 +262,7 @@
           else if (object != _owner)
             [_topLevelObjects addObject:object];
           [_objectStack addObject:object];
+          [_elementStack replaceObjectAtIndex:[_elementStack count] - 1 withObject:object];
         }
       return;
     }
@@ -305,14 +308,21 @@
     {
       NSString *selector = [attributeDict objectForKey:@"selector"];
       NSString *destination = [attributeDict objectForKey:@"destination"];
+      NSString *eventType = [attributeDict objectForKey:@"eventType"];
+      UIControlEvents events = UIControlEventTouchUpInside;
+      if ([eventType isEqual:@"valueChanged"]) events = UIControlEventValueChanged;
+      else if ([eventType isEqual:@"editingChanged"]) events = UIControlEventEditingChanged;
+      else if ([eventType isEqual:@"editingDidBegin"]) events = UIControlEventEditingDidBegin;
+      else if ([eventType isEqual:@"editingDidEnd"]) events = UIControlEventEditingDidEnd;
+      else if ([eventType isEqual:@"editingDidEndOnExit"]) events = UIControlEventEditingDidEndOnExit;
       if (parent != nil && selector != nil && destination != nil)
-        [_pendingActions addObject:[NSDictionary dictionaryWithObjectsAndKeys:parent, @"source", selector, @"selector", destination, @"destination", nil]];
+        [_pendingActions addObject:[NSDictionary dictionaryWithObjectsAndKeys:parent, @"source", selector, @"selector", destination, @"destination", [NSNumber numberWithUnsignedInt:events], @"events", nil]];
     }
 }
 - (void)parser:(NSXMLParser *)parser didEndElement:(NSString *)elementName namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qName
 {
-  if ([self _isObjectElement:elementName attributes:[NSDictionary dictionary]] && [_objectStack count] > 0)
-    [_objectStack removeLastObject];
+  if ([_elementStack lastObject] != [NSNull null]) [_objectStack removeLastObject];
+  [_elementStack removeLastObject];
 }
 @end
 
@@ -345,7 +355,7 @@
 - (NSArray *)instantiateWithOwner:(id)owner options:(NSDictionary *)options
 {
   NSString *path;
-  NSMutableArray *topLevelObjects = [NSMutableArray array];
+  NSArray *topLevelObjects = nil;
 
   path = [_bundle pathForResource:_nibName ofType:@"xib"];
   if (path != nil)

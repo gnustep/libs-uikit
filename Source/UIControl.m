@@ -18,7 +18,7 @@
 }
 - (void)addTarget:(id)target action:(SEL)action forControlEvents:(UIControlEvents)events
 {
-  id storedTarget = target == nil ? [NSNull null] : target;
+  id storedTarget = target == nil ? (id)[NSNull null] : (id)[NSValue valueWithNonretainedObject:target];
   NSDictionary *entry = [NSDictionary dictionaryWithObjectsAndKeys:
     storedTarget, @"target", NSStringFromSelector(action), @"action",
     [NSNumber numberWithUnsignedInt:events], @"events", nil];
@@ -27,7 +27,7 @@
 - (void)removeTarget:(id)target action:(SEL)action forControlEvents:(UIControlEvents)events
 {
   NSMutableArray *remaining = [NSMutableArray array];
-  NSEnumerator *enumerator = [_uiTargets objectEnumerator];
+  NSEnumerator *enumerator = [[[_uiTargets copy] autorelease] objectEnumerator];
   NSDictionary *entry;
 
   while ((entry = [enumerator nextObject]) != nil)
@@ -35,14 +35,20 @@
       id entryTarget = [entry objectForKey:@"target"];
       SEL entryAction = NSSelectorFromString([entry objectForKey:@"action"]);
       UIControlEvents entryEvents = [[entry objectForKey:@"events"] unsignedIntValue];
-      if (entryTarget == [NSNull null])
-        entryTarget = nil;
+      entryTarget = entryTarget == [NSNull null] ? nil : [entryTarget nonretainedObjectValue];
       BOOL targetMatches = (target == nil || target == entryTarget);
       BOOL actionMatches = (action == NULL || action == entryAction);
       BOOL eventsMatch = (events == 0 || (entryEvents & events) != 0 || entryEvents == UIControlEventAllEvents);
 
-      if (targetMatches && actionMatches && eventsMatch)
+      if (targetMatches && actionMatches && eventsMatch) {
+        UIControlEvents rest = entryEvents & ~events;
+        if (rest && events != 0) {
+          NSMutableDictionary *updated = [[entry mutableCopy] autorelease];
+          [updated setObject:[NSNumber numberWithUnsignedInt:rest] forKey:@"events"];
+          [remaining addObject:updated];
+        }
         continue;
+      }
       [remaining addObject:entry];
     }
 
@@ -50,7 +56,7 @@
 }
 - (void)sendActionsForControlEvents:(UIControlEvents)events
 {
-  NSEnumerator *enumerator = [_uiTargets objectEnumerator];
+  NSEnumerator *enumerator = [[[_uiTargets copy] autorelease] objectEnumerator];
   NSDictionary *entry;
 
   if (_enabled == NO)
@@ -61,13 +67,22 @@
       UIControlEvents entryEvents = [[entry objectForKey:@"events"] unsignedIntValue];
       id target = [entry objectForKey:@"target"];
       SEL action = NSSelectorFromString([entry objectForKey:@"action"]);
-      if (target == [NSNull null])
-        target = [NSApp targetForAction:action to:nil from:self];
+      target = target == [NSNull null] ? [NSApp targetForAction:action to:nil from:self] : [target nonretainedObjectValue];
 
       if ((entryEvents & events) != 0 || entryEvents == UIControlEventAllEvents)
         {
           if ([target respondsToSelector:action])
-            [target performSelector:action withObject:self];
+            {
+              NSMethodSignature *signature = [target methodSignatureForSelector:action];
+              NSUInteger count = [signature numberOfArguments];
+              if (count < 2 || count > 4) continue;
+              NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
+              [invocation setTarget:target]; [invocation setSelector:action];
+              id sender = self, event = nil;
+              if (count > 2) [invocation setArgument:&sender atIndex:2];
+              if (count > 3) [invocation setArgument:&event atIndex:3];
+              [invocation invoke];
+            }
         }
     }
 }

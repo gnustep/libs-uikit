@@ -31,7 +31,7 @@ typedef NSEdgeInsets UIEdgeInsets;
 #define CGRectGetWidth NSWidth
 #define CGRectGetHeight NSHeight
 
-typedef unsigned int UIViewAutoresizing;
+typedef NSUInteger UIViewAutoresizing;
 enum {
   UIViewAutoresizingNone = 0,
   UIViewAutoresizingFlexibleLeftMargin = 1 << 0,
@@ -153,5 +153,26 @@ enum {
   UIStackViewDistributionEqualSpacing = 3,
   UIStackViewDistributionEqualCentering = 4
 };
+
+typedef NSInteger UIButtonType;
+enum { UIButtonTypeCustom = 0, UIButtonTypeSystem = 1, UIButtonTypeRoundedRect = 1 };
+typedef NSInteger UITableViewStyle;
+enum { UITableViewStylePlain = 0, UITableViewStyleGrouped = 1 };
+typedef NSInteger UITableViewScrollPosition;
+enum { UITableViewScrollPositionNone = 0, UITableViewScrollPositionTop = 1,
+       UITableViewScrollPositionMiddle = 2, UITableViewScrollPositionBottom = 3 };
+typedef NSUInteger UICollectionViewScrollPosition;
+enum { UICollectionViewScrollPositionNone = 0, UICollectionViewScrollPositionTop = 1,
+       UICollectionViewScrollPositionCenteredVertically = 2, UICollectionViewScrollPositionBottom = 4,
+       UICollectionViewScrollPositionLeft = 8, UICollectionViewScrollPositionCenteredHorizontally = 16,
+       UICollectionViewScrollPositionRight = 32 };
+static inline UIEdgeInsets UIEdgeInsetsMake(CGFloat top, CGFloat left, CGFloat bottom, CGFloat right)
+{ UIEdgeInsets insets = { top, left, bottom, right }; return insets; }
+static const UIEdgeInsets UIEdgeInsetsZero = { 0, 0, 0, 0 };
+static inline BOOL CGRectContainsPoint(CGRect rect, CGPoint point) { return NSPointInRect(point, rect); }
+#define CGRectIntersectsRect NSIntersectsRect
+#define CGRectEqualToRect NSEqualRects
+#define CGPointEqualToPoint NSEqualPoints
+#define CGSizeEqualToSize NSEqualSizes
 
 #endif

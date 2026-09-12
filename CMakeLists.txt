@@ -1,10 +1,8 @@
 cmake_minimum_required(VERSION 3.21)
 
-project(libs-uikit LANGUAGES OBJC)
+project(libs-uikit VERSION 0.1.0 LANGUAGES C OBJC)
 
-if(NOT ANDROID)
-  message(WARNING "This CMake build is intended for the Android NDK toolchain.")
-endif()
+if(ANDROID)
 
 set(GNUSTEP_ANDROID_ROOT "" CACHE PATH
   "Prefix containing Android-built GNUstep Base, GNUstep GUI, and libobjc2")
@@ -72,73 +70,59 @@ if(NOT GNUstepAndroid_FOUND)
     "gnustep-gui, and libobjc.")
 endif()
 
-add_library(libs-uikit SHARED
-  Source/UIResponder.m
-  Source/UIApplication.m
-  Source/UIView.m
-  Source/UIWindow.m
-  Source/UIViewController.m
-  Source/UIColor.m
-  Source/UIImage.m
-  Source/UIFont.m
-  Source/UILabel.m
-  Source/UIImageView.m
-  Source/UIControl.m
-  Source/UIButton.m
-  Source/UITextField.m
-  Source/UITextView.m
-  Source/UISlider.m
-  Source/UISwitch.m
-  Source/UISegmentedControl.m
-  Source/UIScrollView.m
-  Source/UITableViewCell.m
-  Source/NSIndexPath+UIKit.m
-  Source/UITableView.m
-  Source/UICollectionViewCell.m
-  Source/UICollectionViewLayout.m
-  Source/UICollectionViewFlowLayout.m
-  Source/UICollectionView.m
-  Source/UIStackView.m
-  Source/UIOpenGLView.m
-  Source/UINavigationItem.m
-  Source/UINavigationController.m
-  Source/UITabBarController.m
-  Source/UIActivityIndicatorView.m
-  Source/UIAlertView.m
-  Source/UIScreen.m
-  Source/UIDevice.m
-  Source/UINib.m
-  Source/NSBundle+UIKit.m
-)
+else()
+  find_program(GNUSTEP_CONFIG gnustep-config REQUIRED)
+  execute_process(COMMAND ${GNUSTEP_CONFIG} --objc-flags
+    OUTPUT_VARIABLE GNUSTEP_OBJC_FLAGS OUTPUT_STRIP_TRAILING_WHITESPACE COMMAND_ERROR_IS_FATAL ANY)
+  execute_process(COMMAND ${GNUSTEP_CONFIG} --gui-libs
+    OUTPUT_VARIABLE GNUSTEP_GUI_FLAGS OUTPUT_STRIP_TRAILING_WHITESPACE COMMAND_ERROR_IS_FATAL ANY)
+  separate_arguments(GNUSTEP_OBJC_FLAGS UNIX_COMMAND "${GNUSTEP_OBJC_FLAGS}")
+  separate_arguments(GNUSTEP_GUI_FLAGS UNIX_COMMAND "${GNUSTEP_GUI_FLAGS}")
+  list(REMOVE_ITEM GNUSTEP_OBJC_FLAGS -MMD -MP)
+  # Clang on distributions using GCC's Objective-C runtime needs its headers.
+  execute_process(COMMAND gcc -print-file-name=include
+    OUTPUT_VARIABLE GNUSTEP_OBJC_INCLUDE OUTPUT_STRIP_TRAILING_WHITESPACE)
+endif()
 
-target_include_directories(libs-uikit
-  PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Headers>
-    $<BUILD_INTERFACE:${GNUSTEP_BASE_INCLUDE_DIR}>
-    $<BUILD_INTERFACE:${GNUSTEP_GUI_INCLUDE_DIR}>
-    $<INSTALL_INTERFACE:include>
-  PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/Source
-)
+# Keep both build systems on one explicit source inventory.
+file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/Source/Sources.list" UIKIT_SOURCE_NAMES)
+set(UIKIT_SOURCES)
+foreach(source IN LISTS UIKIT_SOURCE_NAMES)
+  list(APPEND UIKIT_SOURCES "Source/${source}")
+endforeach()
+add_library(libs-uikit SHARED ${UIKIT_SOURCES})
+set_target_properties(libs-uikit PROPERTIES OUTPUT_NAME s-uikit VERSION ${PROJECT_VERSION} SOVERSION 0)
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/Source/Sources.list")
 
-target_compile_options(libs-uikit PRIVATE
-  -Wall
-  -Wextra
-  -fobjc-exceptions
-  -fconstant-string-class=NSConstantString
-  -fobjc-runtime=${UIKIT_ANDROID_OBJC_RUNTIME}
-)
-
-target_link_options(libs-uikit PRIVATE
-  -fobjc-runtime=${UIKIT_ANDROID_OBJC_RUNTIME}
-  -Wl,--no-undefined
-)
-
-target_link_libraries(libs-uikit PRIVATE
-  ${GNUSTEP_GUI_LIBRARY}
-  ${GNUSTEP_BASE_LIBRARY}
-  ${OBJC_LIBRARY}
-)
+target_compile_options(libs-uikit PRIVATE -std=gnu11)
+target_include_directories(libs-uikit PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Headers>
+  $<INSTALL_INTERFACE:include>
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Source)
+if(ANDROID)
+  target_include_directories(libs-uikit PUBLIC ${GNUSTEP_BASE_INCLUDE_DIR} ${GNUSTEP_GUI_INCLUDE_DIR})
+  target_compile_options(libs-uikit PRIVATE -Wall -Wextra -fobjc-exceptions
+    -fconstant-string-class=NSConstantString -fobjc-runtime=${UIKIT_ANDROID_OBJC_RUNTIME})
+  target_link_options(libs-uikit PRIVATE -fobjc-runtime=${UIKIT_ANDROID_OBJC_RUNTIME} -Wl,--no-undefined)
+  target_link_libraries(libs-uikit PRIVATE ${GNUSTEP_GUI_LIBRARY} ${GNUSTEP_BASE_LIBRARY} ${OBJC_LIBRARY})
+else()
+  target_include_directories(libs-uikit PUBLIC ${GNUSTEP_OBJC_INCLUDE})
+  target_compile_options(libs-uikit PUBLIC ${GNUSTEP_OBJC_FLAGS})
+  target_link_libraries(libs-uikit PUBLIC ${GNUSTEP_GUI_FLAGS})
+  add_executable(UIKitCoreCatalog Examples/CoreCatalog.m)
+  target_link_libraries(UIKitCoreCatalog PRIVATE libs-uikit)
+  target_link_options(UIKitCoreCatalog PRIVATE "-Wl,-rpath,$<TARGET_FILE_DIR:libs-uikit>")
+  include(CTest)
+  if(BUILD_TESTING)
+    add_executable(UIKitCoreTests Tests/CoreTests.m)
+    target_link_libraries(UIKitCoreTests PRIVATE libs-uikit)
+    target_link_options(UIKitCoreTests PRIVATE "-Wl,-rpath,$<TARGET_FILE_DIR:libs-uikit>")
+    add_test(NAME UIKitCore COMMAND UIKitCoreTests)
+    add_test(NAME UIKitCatalog COMMAND UIKitCoreCatalog --smoke)
+    set_tests_properties(UIKitCatalog PROPERTIES TIMEOUT 30)
+    set_tests_properties(UIKitCore PROPERTIES WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" TIMEOUT 60)
+  endif()
+endif()
 
 install(TARGETS libs-uikit
   LIBRARY DESTINATION lib

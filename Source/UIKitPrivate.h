@@ -8,10 +8,10 @@
 + (UIFont *)_fontWithNSFont:(NSFont *)font;
 @end
 
-static inline NSAutoresizingMaskOptions
+static inline NSUInteger
 UIKitAutoresizingMaskToAppKit(UIViewAutoresizing mask)
 {
-  NSAutoresizingMaskOptions appKitMask = 0;
+  NSUInteger appKitMask = 0;
 
   if ((mask & UIViewAutoresizingFlexibleWidth) != 0)
     appKitMask |= NSViewWidthSizable;
@@ -22,9 +22,9 @@ UIKitAutoresizingMaskToAppKit(UIViewAutoresizing mask)
   if ((mask & UIViewAutoresizingFlexibleRightMargin) != 0)
     appKitMask |= NSViewMaxXMargin;
   if ((mask & UIViewAutoresizingFlexibleBottomMargin) != 0)
-    appKitMask |= NSViewMinYMargin;
-  if ((mask & UIViewAutoresizingFlexibleTopMargin) != 0)
     appKitMask |= NSViewMaxYMargin;
+  if ((mask & UIViewAutoresizingFlexibleTopMargin) != 0)
+    appKitMask |= NSViewMinYMargin;
 
   return appKitMask;
 }
@@ -50,3 +50,29 @@ UIKitNSColorFromRGBA(CGFloat red, CGFloat green, CGFloat blue, CGFloat alpha)
     return [NSColor colorWithCalibratedRed:red / 255.0 green:green / 255.0 blue:blue / 255.0 alpha:alpha];
   return [NSColor colorWithCalibratedRed:red green:green blue:blue alpha:alpha];
 }
+
+@interface UICollectionViewCell (UIKitReuse)
+- (void)_setReuseIdentifier:(NSString *)identifier;
+@end
+
+@interface NSTextField (UIKitOptionalNativeAPI)
+- (void)setPlaceholderString:(NSString *)string;
+- (void)setMaximumNumberOfLines:(NSInteger)count;
+@end
+@interface NSBundle (UIKitOptionalNibAPI)
+- (BOOL)loadNibNamed:(NSString *)name owner:(id)owner topLevelObjects:(NSArray **)objects;
+@end
+
+@interface UIGestureRecognizer (UIKitNativeInput)
+- (void)_setView:(UIView *)view;
+@end
+@interface UITouch (UIKitNativeInput)
+- (void)_updateWithNSEvent:(NSEvent *)event phase:(UITouchPhase)phase;
+@end
+@interface UIEvent (UIKitNativeInput)
+- (id)_initWithTouch:(UITouch *)touch nativeEvent:(NSEvent *)event;
+@end
+
+@interface UIView (UIKitControllerOwnership)
+- (void)_setOwningViewController:(id)controller;
+@end

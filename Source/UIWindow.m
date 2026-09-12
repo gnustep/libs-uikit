@@ -11,7 +11,7 @@
                             backing:NSBackingStoreBuffered
                               defer:NO];
   if (self != nil)
-    [[UIApplication sharedApplication] addWindow:self];
+    { [self setReleasedWhenClosed:NO]; [[UIApplication sharedApplication] addWindow:self]; }
   return self;
 }
 - (void)dealloc
@@ -32,20 +32,32 @@
 - (UIViewController *)rootViewController { return _rootViewController; }
 - (void)setRootViewController:(UIViewController *)controller
 {
-  UIViewController *oldController = _rootViewController;
-  if (oldController == controller)
-    return;
-  [oldController viewWillDisappear:NO];
-  [controller viewWillAppear:NO];
+  if (_rootViewController == controller) return;
+  UIViewController *old = [[_rootViewController retain] autorelease];
+  BOOL visible = [self isVisible];
+  if (visible) { [old beginAppearanceTransition:NO animated:NO]; [controller beginAppearanceTransition:YES animated:NO]; }
   ASSIGN(_rootViewController, controller);
-  if (controller != nil)
-    [self setContentView:(NSView *)[controller view]];
-  [oldController viewDidDisappear:NO];
-  [controller viewDidAppear:NO];
+  [self setContentView:controller ? (NSView *)[controller view] : [[[NSView alloc] initWithFrame:NSZeroRect] autorelease]];
+  if (visible) { [old endAppearanceTransition]; [controller endAppearanceTransition]; }
 }
 - (void)makeKeyAndVisible
 {
+  [[UIApplication sharedApplication] addWindow:self];
+  [[self windowScene] setActivationState:UISceneActivationStateForegroundActive];
+  BOOL appearing = ![_rootViewController _isVisible];
+  if (appearing) [_rootViewController beginAppearanceTransition:YES animated:NO];
   [self makeKeyAndOrderFront:nil];
+  if (appearing) [_rootViewController endAppearanceTransition];
+}
+- (void)close
+{
+  if ([_rootViewController _isVisible]) {
+    [_rootViewController beginAppearanceTransition:NO animated:NO];
+    [_rootViewController endAppearanceTransition];
+  }
+  [[self retain] autorelease];
+  [super close];
+  [[UIApplication sharedApplication] removeWindow:self];
 }
 - (void)addSubview:(UIView *)view
 {

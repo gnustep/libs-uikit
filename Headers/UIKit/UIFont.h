@@ -10,6 +10,9 @@
 + (UIFont *)systemFontOfSize:(CGFloat)fontSize;
 + (UIFont *)boldSystemFontOfSize:(CGFloat)fontSize;
 + (UIFont *)fontWithName:(NSString *)fontName size:(CGFloat)fontSize;
+- (CGFloat)pointSize;
+- (NSString *)fontName;
+- (CGFloat)lineHeight;
 - (NSFont *)NSFont;
 @end
 

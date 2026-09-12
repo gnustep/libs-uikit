@@ -10,9 +10,10 @@ application/window management, views and view controllers, common controls,
 table/navigation/tab containers, images, colors, fonts, nib loading helpers, and
 basic device/screen abstractions.
 
-This is currently a POC which may have significant gaps with the actual UIKit.
-It illustrates that using AppKit to create some of the widgets needed for UIKit is
-possible.
+The 0.1 desktop core candidate adds tested navigation, forms, viewport-based lists,
+basic touch/gesture handling, and a runnable catalog. It remains an AppKit-backed
+UIKit subset. See [the milestone scope and release gates](RELEASE-MILESTONE-1.md)
+for tested behavior, build/test commands, and explicit compatibility limits.
 
 ## AI Disclosure
 
@@ -51,7 +52,8 @@ make
 The top-level build includes both subprojects:
 
 - `Source` builds the `libs-uikit` shared library.
-- `Examples` builds the `UIKitExample` application.
+- `Examples` builds `UIKitExample` and `UIKitCoreCatalog`. The OpenGL example is
+  opt-in with `UIKIT_BUILD_OPENGL_EXAMPLE=yes`.
 
 To build only the library:
 
@@ -132,3 +134,10 @@ are typedefs for `NSPoint`, `NSSize`, and `NSRect`.
 
 This project is distributed under the GNU Lesser General Public License. See
 `COPYING.LIB` for the full license text.
+
+## Core tests and catalog
+
+See [RELEASE-MILESTONE-1.md](RELEASE-MILESTONE-1.md) for the coverage matrix.
+With a configured GNUstep environment, `make test` runs the regression suite.
+For a headless Linux run use `xvfb-run -a make test`. A CMake build also provides
+`UIKitCoreCatalog` and two CTest entries, including a catalog smoke test.

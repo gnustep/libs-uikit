@@ -8,6 +8,7 @@
     {
       _textField = [[NSTextField alloc] initWithFrame:[self bounds]];
       [_textField setAutoresizingMask:(NSViewWidthSizable | NSViewHeightSizable)];
+      [_textField setDelegate:(id)self];
       [_textField setTarget:self];
       [_textField setAction:@selector(_uiTextFieldAction:)];
       [(NSView *)self addSubview:_textField];
@@ -21,7 +22,13 @@
   [_placeholder release];
   [super dealloc];
 }
-- (void)_uiTextFieldAction:(id)sender { [self sendActionsForControlEvents:UIControlEventValueChanged]; }
+- (void)_uiTextFieldAction:(id)sender { [self sendActionsForControlEvents:UIControlEventEditingDidEndOnExit]; }
+- (void)controlTextDidBeginEditing:(NSNotification *)note { [self sendActionsForControlEvents:UIControlEventEditingDidBegin]; }
+- (void)controlTextDidChange:(NSNotification *)note { [self sendActionsForControlEvents:UIControlEventEditingChanged]; }
+- (void)controlTextDidEndEditing:(NSNotification *)note { [self sendActionsForControlEvents:UIControlEventEditingDidEnd]; }
+- (BOOL)canBecomeFirstResponder { return [self isEnabled]; }
+- (BOOL)becomeFirstResponder { return [self canBecomeFirstResponder] && [[self window] makeFirstResponder:_textField]; }
+- (BOOL)resignFirstResponder { return [[self window] makeFirstResponder:nil]; }
 - (NSString *)text { return [_textField stringValue]; }
 - (void)setText:(NSString *)text { [_textField setStringValue:(text == nil ? @"" : text)]; }
 - (NSString *)placeholder { return _placeholder; }
@@ -36,7 +43,24 @@
 - (UIFont *)font { return [UIFont _fontWithNSFont:[_textField font]]; }
 - (void)setFont:(UIFont *)font { [_textField setFont:[font NSFont]]; }
 - (BOOL)isSecureTextEntry { return _secureTextEntry; }
-- (void)setSecureTextEntry:(BOOL)secureTextEntry { _secureTextEntry = secureTextEntry; }
+- (void)setSecureTextEntry:(BOOL)secureTextEntry
+{
+  if (_secureTextEntry == secureTextEntry) return;
+  NSTextField *replacement = [[secureTextEntry ? [NSSecureTextField class] : [NSTextField class] alloc] initWithFrame:[_textField frame]];
+  [replacement setStringValue:[_textField stringValue]];
+  [replacement setFont:[_textField font]]; [replacement setTextColor:[_textField textColor]];
+  [replacement setAlignment:[_textField alignment]]; [replacement setEnabled:[_textField isEnabled]];
+  [replacement setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+  [replacement setTarget:self]; [replacement setAction:@selector(_uiTextFieldAction:)];
+  [replacement setDelegate:(id)self];
+  if ([replacement respondsToSelector:@selector(setPlaceholderString:)]) [replacement setPlaceholderString:_placeholder];
+  BOOL editing = [_textField currentEditor] != nil;
+  if (editing) [[self window] makeFirstResponder:nil];
+  [_textField setDelegate:nil]; [_textField removeFromSuperview]; [_textField release];
+  _textField = replacement; _secureTextEntry = secureTextEntry;
+  [super addSubview:(UIView *)_textField];
+  if (editing) [self becomeFirstResponder];
+}
 - (NSTextAlignment)textAlignment { return _textAlignment; }
 - (void)setTextAlignment:(NSTextAlignment)alignment
 {

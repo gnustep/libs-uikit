@@ -8,7 +8,13 @@
   NSScrollView *_scrollView;
   UIView *_documentView;
   CGSize _contentSize;
+  id _scrollDelegate;
+  BOOL _updatingVisibleContent;
 }
+- (id)delegate;
+- (void)setDelegate:(id)delegate;
+- (CGRect)visibleContentRect;
+- (void)setContentOffset:(CGPoint)offset animated:(BOOL)animated;
 - (CGSize)contentSize;
 - (void)setContentSize:(CGSize)contentSize;
 - (CGPoint)contentOffset;

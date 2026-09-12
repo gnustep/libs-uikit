@@ -3,7 +3,7 @@
 
 #import <UIKit/UIResponder.h>
 
-@class UISceneSession;
+@class UIScene, UISceneSession;
 
 typedef int UISceneActivationState;
 enum {
