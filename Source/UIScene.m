@@ -1,3 +1,4 @@
+#import "UIKitPrivate.h"
 #import <UIKit/UIScene.h>
 #import <UIKit/UISceneSession.h>
 

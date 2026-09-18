@@ -31,6 +31,8 @@ extern NSString *UIApplicationWillTerminateNotification;
 - (NSSet *)openSessions;
 - (void)addWindow:(UIWindow *)window;
 - (void)removeWindow:(UIWindow *)window;
+- (UIWindow *)keyWindow;
+- (BOOL)sendAction:(SEL)action to:(id)target from:(id)sender forEvent:(UIEvent *)event;
 - (void)sendEvent:(UIEvent *)event;
 - (void)terminate:(id)sender;
 @end

@@ -1,7 +1,7 @@
 #ifndef GNUSTEP_UIKIT_UIOPENGLVIEW_H
 #define GNUSTEP_UIKIT_UIOPENGLVIEW_H
 
-#import <UIKit/UIKitTypes.h>
+#import <UIKit/GNUstepUIKit.h>
 
 @interface UIOpenGLView : NSOpenGLView
 - (id)initWithFrame:(CGRect)frame;

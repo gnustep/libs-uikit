@@ -1,125 +1,223 @@
 #import "UIKitPrivate.h"
 
+@implementation _UIKitViewPeer
+- (BOOL)isFlipped { return YES; }
+- (BOOL)acceptsFirstResponder { return [owner canBecomeFirstResponder]; }
+- (BOOL)becomeFirstResponder { return YES; }
+- (BOOL)resignFirstResponder { return [owner canResignFirstResponder]; }
+- (void)setFrame:(NSRect)frame
+{
+  [super setFrame:frame];
+  if (owner) [owner _nativeFrameChanged:frame];
+}
+- (BOOL)wantsDefaultClipping { return [owner clipsToBounds]; }
+- (void)drawRect:(NSRect)rect { [owner layoutIfNeeded]; [owner drawRect:rect]; }
+- (NSView *)hitTest:(NSPoint)point
+{
+  NSPoint local = [self convertPoint:point fromView:[self superview]];
+  local = [[owner _nativeCoordinateView] convertPoint:local fromView:self];
+  UIView *hit = [owner hitTest:local withEvent:nil];
+  if (!hit) return nil;
+  NSView *nativeHit = [super hitTest:point];
+  if ([nativeHit isDescendantOf:[hit _nativeView]]) return nativeHit;
+  return [hit _nativeView];
+}
+- (void)mouseDown:(NSEvent *)event { [owner mouseDown:event]; }
+- (void)mouseDragged:(NSEvent *)event { [owner mouseDragged:event]; }
+- (void)mouseUp:(NSEvent *)event { [owner mouseUp:event]; }
+@end
+
 @implementation UIView
 - (id)init { return [self initWithFrame:CGRectZero]; }
-- (BOOL)isFlipped { return YES; }
+- (id)initWithCoder:(NSCoder *)coder { return [self initWithFrame:CGRectZero]; }
 - (id)initWithFrame:(CGRect)frame
 {
-  self = [super initWithFrame:frame];
-  if (self != nil)
-    {
-      [self setAutoresizesSubviews:YES];
-      _userInteractionEnabled = YES;
-      _gestureRecognizers = [NSMutableArray new];
-      _alpha = 1.0;
-      _contentMode = UIViewContentModeScaleToFill;
-      _uiAutoresizingMask = UIViewAutoresizingNone;
-    }
+  self = [super init];
+  if (self) {
+    _frame = frame; _bounds = CGRectMake(0, 0, frame.size.width, frame.size.height);
+    _subviews = [NSMutableArray new]; _gestureRecognizers = [NSMutableArray new];
+    _userInteractionEnabled = YES; _autoresizesSubviews = YES; _alpha = 1;
+    _nativeView = [[_UIKitViewPeer alloc] initWithFrame:frame];
+    ((_UIKitViewPeer *)_nativeView)->owner = self;
+    [_nativeView setAutoresizesSubviews:YES];
+  }
   return self;
 }
 - (void)dealloc
 {
+  [NSObject cancelPreviousPerformRequestsWithTarget:self];
   for (UIGestureRecognizer *recognizer in _gestureRecognizers) [recognizer _setView:nil];
-  [_gestureRecognizers release]; [_activeTouch release];
-  [_backgroundColor release];
+  for (UIView *view in _subviews) view->_superview = nil;
+  ((_UIKitViewPeer *)_nativeView)->owner = nil;
+  [_nativeView removeFromSuperview]; [_nativeView release]; [_subviews release];
+  [_gestureRecognizers release]; [_activeTouch release]; [_backgroundColor release];
   [super dealloc];
 }
-- (CGRect)frame { return [super frame]; }
-- (void)setFrame:(CGRect)frame { if (!NSEqualRects([self frame], frame)) { [super setFrame:frame]; [self setNeedsLayout]; } }
-- (CGRect)bounds { return [super bounds]; }
-- (void)setBounds:(CGRect)bounds { if (!NSEqualRects([self bounds], bounds)) { [super setBounds:bounds]; [self setNeedsLayout]; } }
-- (CGPoint)center
+- (NSView *)_nativeView { return _nativeView; }
+- (NSView *)_nativeContainerView { return _nativeView; }
+- (NSView *)_nativeCoordinateView { return _nativeView; }
+- (void)_addNativeSubview:(NSView *)view { [_nativeView addSubview:view]; }
+- (CGRect)frame { return _frame; }
+- (void)setFrame:(CGRect)frame
 {
-  NSRect frame = [self frame];
-  return NSMakePoint(NSMidX(frame), NSMidY(frame));
+  if (NSEqualRects(_frame, frame)) return;
+  CGSize previous = _bounds.size;
+  _frame = frame; _bounds.size = frame.size;
+  [_nativeView setFrame:frame]; [_nativeView setBounds:_bounds];
+  if (_autoresizesSubviews && !NSEqualSizes(previous, _bounds.size))
+    for (UIView *view in [self subviews]) [view resizeWithOldSuperviewSize:previous];
+  [self setNeedsLayout];
 }
-- (void)setCenter:(CGPoint)center
+- (void)_nativeFrameChanged:(CGRect)frame { [self setFrame:frame]; }
+- (CGRect)bounds { return _bounds; }
+- (void)setBounds:(CGRect)bounds
 {
-  NSRect frame = [self frame];
-  frame.origin.x = center.x - frame.size.width / 2.0;
-  frame.origin.y = center.y - frame.size.height / 2.0;
-  [self setFrame:frame];
+  if (NSEqualRects(_bounds, bounds)) return;
+  CGSize previous = _bounds.size; _bounds = bounds;
+  [_nativeView setBounds:bounds];
+  if (_autoresizesSubviews && !NSEqualSizes(previous, bounds.size))
+    for (UIView *view in [self subviews]) [view resizeWithOldSuperviewSize:previous];
+  [self setNeedsLayout];
 }
+- (CGPoint)center { return CGPointMake(NSMidX(_frame), NSMidY(_frame)); }
+- (void)setCenter:(CGPoint)point { CGRect frame = _frame; frame.origin = CGPointMake(point.x-frame.size.width/2, point.y-frame.size.height/2); [self setFrame:frame]; }
 - (UIColor *)backgroundColor { return _backgroundColor; }
-- (void)setBackgroundColor:(UIColor *)color
-{
-  ASSIGN(_backgroundColor, color);
-  [self setNeedsDisplay:YES];
-}
+- (void)setBackgroundColor:(UIColor *)color { ASSIGN(_backgroundColor, color); [self setNeedsDisplay]; }
 - (BOOL)isHidden { return _hidden; }
-- (void)setHidden:(BOOL)hidden
-{
-  _hidden = hidden;
-  [super setHidden:hidden];
-  if ([[self superview] respondsToSelector:@selector(setNeedsLayout)])
-    [[self superview] setNeedsLayout];
-}
+- (void)setHidden:(BOOL)hidden { if (hidden) [self _cancelActiveTouch]; _hidden = hidden; [_nativeView setHidden:hidden]; [_superview setNeedsLayout]; }
 - (CGFloat)alpha { return _alpha; }
-- (void)setAlpha:(CGFloat)alpha
-{
-  _alpha = alpha;
-  if ([self respondsToSelector:@selector(setAlphaValue:)])
-    [self setAlphaValue:alpha];
-}
+- (void)setAlpha:(CGFloat)alpha { _alpha = alpha; if ([_nativeView respondsToSelector:@selector(setAlphaValue:)]) [_nativeView setAlphaValue:alpha]; }
 - (UIViewContentMode)contentMode { return _contentMode; }
-- (void)setContentMode:(UIViewContentMode)mode { _contentMode = mode; }
+- (void)setContentMode:(UIViewContentMode)mode { _contentMode = mode; [self setNeedsDisplay]; }
 - (UIViewAutoresizing)autoresizingMask { return _uiAutoresizingMask; }
-- (void)setAutoresizingMask:(UIViewAutoresizing)mask
-{
-  _uiAutoresizingMask = mask;
-  [super setAutoresizingMask:UIKitAutoresizingMaskToAppKit(mask)];
-}
+- (void)setAutoresizingMask:(UIViewAutoresizing)mask { _uiAutoresizingMask = mask; }
+- (BOOL)autoresizesSubviews { return _autoresizesSubviews; }
+- (void)setAutoresizesSubviews:(BOOL)value { _autoresizesSubviews = value; }
+- (BOOL)clipsToBounds { return _clipsToBounds; }
+- (void)setClipsToBounds:(BOOL)value { _clipsToBounds = value; [self setNeedsDisplay]; }
 - (NSInteger)tag { return _tag; }
 - (void)setTag:(NSInteger)tag { _tag = tag; }
-- (void)addSubview:(UIView *)view { [super addSubview:(NSView *)view]; [self setNeedsLayout]; }
+- (UIWindow *)window { return [_superview window]; }
+- (NSArray *)subviews { return [[_subviews copy] autorelease]; }
+- (UIView *)superview { return _superview; }
+- (void)addSubview:(UIView *)view { [self insertSubview:view atIndex:[_subviews count]]; }
+- (void)insertSubview:(UIView *)view atIndex:(NSInteger)index
+{
+  if (!view) return;
+  if (![view isKindOfClass:[UIView class]] || [self isDescendantOfView:view])
+    [NSException raise:NSInvalidArgumentException format:@"Invalid UIView hierarchy"];
+  if (index < 0 || index > [_subviews count]) [NSException raise:NSRangeException format:@"Invalid subview index"];
+  [[view retain] autorelease];
+  if (view->_superview == self) {
+    [_subviews removeObjectIdenticalTo:view];
+    [_subviews insertObject:view atIndex:MIN((NSUInteger)index, [_subviews count])];
+    [self _syncNativeSubviewOrder]; return;
+  }
+  [view removeFromSuperview];
+  UIWindow *window = [self window];
+  [view willMoveToSuperview:self]; [view _willMoveToWindow:window];
+  [_subviews insertObject:view atIndex:index]; view->_superview = self;
+  [[self _nativeContainerView] addSubview:[view _nativeView]];
+  [self _syncNativeSubviewOrder];
+  [view didMoveToSuperview]; [view _didMoveToWindow]; [self didAddSubview:view];
+  [self setNeedsLayout];
+}
+- (void)insertSubview:(UIView *)view belowSubview:(UIView *)sibling
+{ NSUInteger index = [_subviews indexOfObjectIdenticalTo:sibling]; if (index == NSNotFound) [NSException raise:NSInvalidArgumentException format:@"Not a sibling"]; if (view == sibling) return; NSUInteger old = [_subviews indexOfObjectIdenticalTo:view]; if (old != NSNotFound && old < index) index--; [self insertSubview:view atIndex:index]; }
+- (void)insertSubview:(UIView *)view aboveSubview:(UIView *)sibling
+{ NSUInteger index = [_subviews indexOfObjectIdenticalTo:sibling]; if (index == NSNotFound) [NSException raise:NSInvalidArgumentException format:@"Not a sibling"]; if (view == sibling) return; NSUInteger old = [_subviews indexOfObjectIdenticalTo:view]; if (old != NSNotFound && old < index) index--; [self insertSubview:view atIndex:index+1]; }
+- (void)bringSubviewToFront:(UIView *)view { if (view && view->_superview == self) [self insertSubview:view atIndex:[_subviews count]]; }
+- (void)sendSubviewToBack:(UIView *)view { if (view && view->_superview == self) [self insertSubview:view atIndex:0]; }
+- (void)_syncNativeSubviewOrder
+{
+  NSView *previous = nil;
+  for (UIView *view in _subviews) {
+    [[self _nativeContainerView] addSubview:[view _nativeView] positioned:NSWindowAbove relativeTo:previous];
+    previous = [view _nativeView];
+  }
+}
+- (void)_sortSubviewsUsingFunction:(NSComparisonResult (*)(id,id,void *))function context:(void *)context
+{ [_subviews sortUsingFunction:function context:context]; [self _syncNativeSubviewOrder]; }
 - (void)removeFromSuperview
 {
-  [[self retain] autorelease]; [self _cancelActiveTouch];
-  [super removeFromSuperview];
+  if (!_superview) return;
+  [[self retain] autorelease]; UIView *parent = _superview;
+  [parent willRemoveSubview:self]; [self willMoveToSuperview:nil]; [self _willMoveToWindow:nil];
+  [_nativeView removeFromSuperview]; _superview = nil; [parent->_subviews removeObjectIdenticalTo:self];
+  [self didMoveToSuperview]; [self _didMoveToWindow]; [parent setNeedsLayout];
 }
-- (NSArray *)subviews { return [super subviews]; }
-- (UIView *)superview { return (UIView *)[super superview]; }
+- (BOOL)isDescendantOfView:(UIView *)view
+{ for (UIView *ancestor = self; ancestor; ancestor = [ancestor superview]) if (ancestor == view) return YES; return NO; }
 - (UIView *)viewWithTag:(NSInteger)tag
+{ if (_tag == tag) return self; for (UIView *view in _subviews) { UIView *found = [view viewWithTag:tag]; if (found) return found; } return nil; }
+- (CGPoint)convertPoint:(CGPoint)point toView:(UIView *)view
+{ return [[self _nativeCoordinateView] convertPoint:point toView:[(view ?: (UIView *)[self window]) _nativeCoordinateView]]; }
+- (CGPoint)convertPoint:(CGPoint)point fromView:(UIView *)view
+{ return [[self _nativeCoordinateView] convertPoint:point fromView:[(view ?: (UIView *)[self window]) _nativeCoordinateView]]; }
+- (CGRect)convertRect:(CGRect)rect toView:(UIView *)view
+{ return [[self _nativeCoordinateView] convertRect:rect toView:[(view ?: (UIView *)[self window]) _nativeCoordinateView]]; }
+- (CGRect)convertRect:(CGRect)rect fromView:(UIView *)view
+{ return [[self _nativeCoordinateView] convertRect:rect fromView:[(view ?: (UIView *)[self window]) _nativeCoordinateView]]; }
+- (void)_willMoveToWindow:(UIWindow *)window
 {
-  NSEnumerator *enumerator;
-  UIView *subview;
-
-  if (_tag == tag)
-    return self;
-
-  enumerator = [[self subviews] objectEnumerator];
-  while ((subview = [enumerator nextObject]) != nil)
-    {
-      UIView *match = [subview viewWithTag:tag];
-      if (match != nil)
-        return match;
-    }
-
-  return nil;
+  if ([self window] != window) { [self _cancelActiveTouch]; if ([self isFirstResponder]) [self resignFirstResponder]; }
+  [self willMoveToWindow:window]; for (UIView *view in [self subviews]) [view _willMoveToWindow:window];
 }
-- (void)setNeedsDisplay { [super setNeedsDisplay:YES]; }
+- (void)_didMoveToWindow { [self didMoveToWindow]; for (UIView *view in [self subviews]) [view _didMoveToWindow]; }
+- (void)willMoveToSuperview:(UIView *)view {}
+- (void)didMoveToSuperview {}
+- (void)willMoveToWindow:(UIWindow *)window {}
+- (void)didMoveToWindow {}
+- (void)didAddSubview:(UIView *)view {}
+- (void)willRemoveSubview:(UIView *)view {}
+- (void)setNeedsDisplay { [_nativeView setNeedsDisplay:YES]; }
+- (void)setNeedsDisplayInRect:(CGRect)rect { [_nativeView setNeedsDisplayInRect:rect]; }
 - (void)setNeedsLayout
 {
-  if (!_uiNeedsLayout)
-    [self performSelector:@selector(layoutIfNeeded) withObject:nil afterDelay:0];
-  _uiNeedsLayout = YES;
-  [super setNeedsDisplay:YES];
+  if (!_uiNeedsLayout) [self performSelector:@selector(layoutIfNeeded) withObject:nil afterDelay:0];
+  _uiNeedsLayout = YES; [self setNeedsDisplay];
 }
 - (void)layoutIfNeeded
 {
   [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(layoutIfNeeded) object:nil];
-  if (_uiNeedsLayout)
-    {
-      _uiNeedsLayout = NO;
-      [self layoutSubviews];
-    }
-  for (id subview in [[[self subviews] copy] autorelease])
-    if ([subview respondsToSelector:@selector(layoutIfNeeded)])
-      [subview layoutIfNeeded];
+  if (_uiNeedsLayout) { _uiNeedsLayout = NO; [self layoutSubviews]; }
+  for (UIView *view in [self subviews]) [view layoutIfNeeded];
 }
 - (void)layoutSubviews {}
 - (CGSize)sizeThatFits:(CGSize)size { return [self bounds].size; }
 - (void)sizeToFit { CGRect frame = [self frame]; frame.size = [self sizeThatFits:frame.size]; [self setFrame:frame]; }
+- (void)drawRect:(CGRect)rect { if (_backgroundColor) { [[_backgroundColor NSColor] set]; NSRectFill(rect); } }
+- (BOOL)endEditing:(BOOL)force
+{
+  UIResponder *responder = [[self window] _firstResponder];
+  if (![responder isKindOfClass:[UIView class]] || ![(UIView *)responder isDescendantOfView:self]) return NO;
+  if (force) return [[self window] _makeFirstResponder:nil];
+  return [responder resignFirstResponder];
+}
+- (void)_setOwningViewController:(id)controller { _owningViewController = controller; }
+- (UIResponder *)nextResponder { return _owningViewController ?: _superview; }
+- (UIWindow *)_responderWindow { return [self window]; }
+- (NSResponder *)_nativeResponder { return _nativeView; }
+- (BOOL)isUserInteractionEnabled { return _userInteractionEnabled; }
+- (void)setUserInteractionEnabled:(BOOL)enabled { if (!enabled) [self _cancelActiveTouch]; _userInteractionEnabled = enabled; }
+- (NSArray *)gestureRecognizers { return [[_gestureRecognizers copy] autorelease]; }
+- (void)addGestureRecognizer:(UIGestureRecognizer *)recognizer
+{
+  if (!recognizer || [recognizer view] == self) return;
+  [[recognizer retain] autorelease]; [[recognizer view] removeGestureRecognizer:recognizer];
+  [_gestureRecognizers addObject:recognizer]; [recognizer _setView:self];
+}
+- (void)removeGestureRecognizer:(UIGestureRecognizer *)recognizer
+{ if ([recognizer view] != self) return; [recognizer _setView:nil]; [_gestureRecognizers removeObjectIdenticalTo:recognizer]; }
+- (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event { return CGRectContainsPoint([self bounds], point); }
+- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
+{
+  if (!_userInteractionEnabled || _hidden || _alpha <= 0.01 || ![self pointInside:point withEvent:event]) return nil;
+  for (UIView *child in [[self subviews] reverseObjectEnumerator]) {
+    UIView *hit = [child hitTest:[child convertPoint:point fromView:self] withEvent:event]; if (hit) return hit;
+  }
+  return self;
+}
 /* Use UIKit coordinates here: GNUstep versions differ in how NSView treats
    vertical autoresizing margins in flipped superviews. */
 - (void)resizeWithOldSuperviewSize:(NSSize)oldSize
@@ -149,86 +247,6 @@
   }
   [self setFrame:frame];
 }
-- (void)resizeSubviewsWithOldSize:(NSSize)oldSize
-{
-  [super resizeSubviewsWithOldSize:oldSize];
-  [self setNeedsLayout];
-  [self layoutIfNeeded];
-}
-- (void)drawRect:(NSRect)rect
-{
-  [self layoutIfNeeded];
-  if (_backgroundColor != nil)
-    {
-      [[_backgroundColor NSColor] set];
-      NSRectFill(rect);
-    }
-}
-
-- (BOOL)isUserInteractionEnabled { return _userInteractionEnabled; }
-- (void)setUserInteractionEnabled:(BOOL)enabled { if (!enabled) [self _cancelActiveTouch]; _userInteractionEnabled = enabled; }
-- (NSArray *)gestureRecognizers { return [[_gestureRecognizers copy] autorelease]; }
-- (void)addGestureRecognizer:(UIGestureRecognizer *)recognizer
-{
-  if (!recognizer || [recognizer view] == self) return;
-  [[recognizer retain] autorelease];
-  [[recognizer view] removeGestureRecognizer:recognizer];
-  [_gestureRecognizers addObject:recognizer]; [recognizer _setView:self];
-}
-- (void)removeGestureRecognizer:(UIGestureRecognizer *)recognizer
-{
-  if ([recognizer view] != self) return;
-  [recognizer _setView:nil]; [_gestureRecognizers removeObjectIdenticalTo:recognizer];
-}
-- (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event { return NSPointInRect(point, [self bounds]); }
-- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
-{
-  if (!_userInteractionEnabled || [self isHidden] || _alpha <= 0.01 || ![self pointInside:point withEvent:event]) return nil;
-  for (id child in [[self subviews] reverseObjectEnumerator]) {
-    if (![child isKindOfClass:[UIView class]]) continue;
-    UIView *hit = [child hitTest:[child convertPoint:point fromView:self] withEvent:event];
-    if (hit) return hit;
-  }
-  return self;
-}
-- (NSView *)hitTest:(NSPoint)point
-{
-  if (!_userInteractionEnabled || [self isHidden] || _alpha <= 0.01) return nil;
-  return [super hitTest:point];
-}
-- (void)_setOwningViewController:(id)controller { _owningViewController = controller; }
-- (NSResponder *)nextResponder { return _owningViewController ?: [super nextResponder]; }
-- (BOOL)canBecomeFirstResponder { return NO; }
-- (BOOL)acceptsFirstResponder { return [self canBecomeFirstResponder]; }
-- (BOOL)becomeFirstResponder
-{
-  if (_uiChangingFirstResponder || [[self window] firstResponder] == self) return YES;
-  if (![self canBecomeFirstResponder] || ![self window]) return NO;
-  _uiChangingFirstResponder = YES;
-  BOOL result;
-  @try { result = [[self window] makeFirstResponder:self]; }
-  @finally { _uiChangingFirstResponder = NO; }
-  return result;
-}
-- (BOOL)resignFirstResponder
-{
-  if (_uiChangingFirstResponder || [[self window] firstResponder] != self) return YES;
-  _uiChangingFirstResponder = YES;
-  BOOL result;
-  @try { result = [[self window] makeFirstResponder:nil]; }
-  @finally { _uiChangingFirstResponder = NO; }
-  return result;
-}
-- (void)_forwardTouches:(NSSet *)touches event:(UIEvent *)event selector:(SEL)selector
-{
-  NSResponder *next = [self nextResponder];
-  while (next && ![next respondsToSelector:selector]) next = [next nextResponder];
-  if (next) [next performSelector:selector withObject:touches withObject:event];
-}
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event { [self _forwardTouches:touches event:event selector:_cmd]; }
-- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event { [self _forwardTouches:touches event:event selector:_cmd]; }
-- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event { [self _forwardTouches:touches event:event selector:_cmd]; }
-- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event { [self _forwardTouches:touches event:event selector:_cmd]; }
 - (void)_cancelActiveTouch
 {
   if (!_activeTouch) return;
@@ -251,7 +269,7 @@
   SEL selector = phase == UITouchPhaseBegan ? @selector(touchesBegan:withEvent:) :
     phase == UITouchPhaseMoved ? @selector(touchesMoved:withEvent:) : @selector(touchesEnded:withEvent:);
   BOOL cancel = NO;
-  for (NSView *ancestor = self; ancestor; ancestor = [ancestor superview]) {
+  for (UIView *ancestor = self; ancestor; ancestor = [ancestor superview]) {
     if (![ancestor isKindOfClass:[UIView class]]) continue;
     for (UIGestureRecognizer *recognizer in [(UIView *)ancestor gestureRecognizers]) {
       if (![recognizer isEnabled]) continue;

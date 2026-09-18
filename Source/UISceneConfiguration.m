@@ -1,3 +1,4 @@
+#import "UIKitPrivate.h"
 #import <UIKit/UISceneConfiguration.h>
 
 @implementation UISceneConfiguration

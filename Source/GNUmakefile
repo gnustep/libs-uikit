@@ -7,8 +7,8 @@ PACKAGE_NAME = libs-uikit
 include $(GNUSTEP_MAKEFILES)/common.make
 
 LIBRARY_NAME = libs-uikit
-libs-uikit_VERSION = 0.1.0
-libs-uikit_INTERFACE_VERSION = 0
+libs-uikit_VERSION = 0.2.0
+libs-uikit_INTERFACE_VERSION = 1
 
 libs-uikit_OBJC_FILES = $(shell cat Sources.list)
 
@@ -16,6 +16,7 @@ libs-uikit_HEADER_FILES_DIR = ../Headers/UIKit
 libs-uikit_HEADER_FILES_INSTALL_DIR = /UIKit
 libs-uikit_HEADER_FILES = \
 	UIKit.h \
+	GNUstepUIKit.h \
 	UIKitTypes.h \
 	UIGestureRecognizer.h \
 	UITapGestureRecognizer.h \

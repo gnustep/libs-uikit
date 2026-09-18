@@ -8,5 +8,5 @@ mkdir -p "$UIKIT_TEST_BUILD_DIR"
 objc_headers=$(gcc -print-file-name=include)
 sources=$(sed 's|^|Source/|' Source/Sources.list)
 $CC -std=gnu11 $(gnustep-config --objc-flags) -I"$objc_headers" -IHeaders -ISource \
-  $sources Tests/CoreTests.m -o "$UIKIT_TEST_BUILD_DIR/CoreTests" $(gnustep-config --gui-libs)
+  $sources Tests/CoreTests.m Tests/UIKitContract.m -o "$UIKIT_TEST_BUILD_DIR/CoreTests" $(gnustep-config --gui-libs)
 "$UIKIT_TEST_BUILD_DIR/CoreTests"

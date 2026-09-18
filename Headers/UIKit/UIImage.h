@@ -5,12 +5,10 @@
 
 @interface UIImage : NSObject
 {
-  NSImage *_image;
+  id _image;
 }
 + (UIImage *)imageNamed:(NSString *)name;
 + (UIImage *)imageWithContentsOfFile:(NSString *)path;
-- (id)initWithNSImage:(NSImage *)image;
-- (NSImage *)NSImage;
 - (CGSize)size;
 @end
 

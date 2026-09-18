@@ -7,7 +7,7 @@
 
 @interface UITextField : UIControl
 {
-  NSTextField *_textField;
+  id _textField;
   NSString *_placeholder;
   BOOL _secureTextEntry;
   NSTextAlignment _textAlignment;

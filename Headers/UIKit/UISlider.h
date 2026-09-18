@@ -5,7 +5,7 @@
 
 @interface UISlider : UIControl
 {
-  NSSlider *_slider;
+  id _slider;
 }
 - (float)value;
 - (void)setValue:(float)value;

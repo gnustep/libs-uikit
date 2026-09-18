@@ -1,3 +1,4 @@
+#import "UIKitPrivate.h"
 #import <UIKit/UIOpenGLView.h>
 #import <objc/runtime.h>
 

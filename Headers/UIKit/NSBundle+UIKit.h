@@ -4,7 +4,7 @@
 #import <UIKit/UIKitTypes.h>
 
 @interface NSBundle (UIKit)
-- (BOOL)loadNibNamed:(NSString *)name owner:(id)owner options:(NSDictionary *)options;
+- (NSArray *)loadNibNamed:(NSString *)name owner:(id)owner options:(NSDictionary *)options;
 @end
 
 #endif

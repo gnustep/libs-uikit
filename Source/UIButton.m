@@ -1,3 +1,4 @@
+#import "UIKitPrivate.h"
 #import <UIKit/UIButton.h>
 
 @implementation UIButton
@@ -18,7 +19,7 @@
       [_button setBezelStyle:NSRoundedBezelStyle];
       [_button setTarget:self];
       [_button setAction:@selector(_uiButtonPressed:)];
-      [(NSView *)self addSubview:_button];
+      [self _addNativeSubview:_button];
     }
   return self;
 }

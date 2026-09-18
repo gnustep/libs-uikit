@@ -3,10 +3,11 @@
 This document summarizes the current public UIKit-style surface in this
 repository and the major UIKit class families that are not implemented yet.
 
-`libs-uikit` is intentionally a focused UIKit-like compatibility layer on top of
-GNUstep/AppKit. It is not currently a complete UIKit clone.
+`libs-uikit` targets unchanged Objective-C UIKit application source, using private
+GNUstep/AppKit peers. It is not currently a complete UIKit implementation. See
+[SOURCE-COMPATIBILITY.md](SOURCE-COMPATIBILITY.md) for the contract and remaining gates.
 
-See [the 0.1 core coverage matrix](RELEASE-MILESTONE-1.md) for behavior verified
+See [the core coverage matrix](RELEASE-MILESTONE-1.md) for behavior verified
 by tests and the release gates that remain. A public header does not imply full
 UIKit compatibility.
 
@@ -31,7 +32,7 @@ The current implementation exposes these public UIKit-style headers through
   `UINavigationController`, `UITabBarController`
 - Indicators and alerts: `UIActivityIndicatorView`, `UIAlertView`
 - Loading helpers: `UINib`, `NSBundle` UIKit helpers
-- GNUstep-specific compatibility: `UIOpenGLView`
+`UIOpenGLView` is an explicit GNUstep extension, outside the UIKit umbrella.
 
 ## Missing Class Families
 

@@ -2,7 +2,7 @@
 #define GNUSTEP_UIKIT_UIKIT_TYPES_H
 
 #import <Foundation/Foundation.h>
-#import <AppKit/AppKit.h>
+
 
 #ifndef IBOutlet
 #define IBOutlet
@@ -14,7 +14,10 @@
 typedef NSPoint CGPoint;
 typedef NSSize CGSize;
 typedef NSRect CGRect;
-typedef NSEdgeInsets UIEdgeInsets;
+typedef struct UIEdgeInsets { CGFloat top, left, bottom, right; } UIEdgeInsets;
+typedef NSInteger NSTextAlignment;
+enum { NSTextAlignmentLeft = 0, NSTextAlignmentCenter = 1, NSTextAlignmentRight = 2,
+       NSTextAlignmentJustified = 3, NSTextAlignmentNatural = 4 };
 
 #define CGPointMake NSMakePoint
 #define CGSizeMake NSMakeSize
@@ -42,7 +45,7 @@ enum {
   UIViewAutoresizingFlexibleBottomMargin = 1 << 5
 };
 
-typedef int UIViewContentMode;
+typedef NSInteger UIViewContentMode;
 enum {
   UIViewContentModeScaleToFill = 0,
   UIViewContentModeScaleAspectFit = 1,
@@ -50,7 +53,7 @@ enum {
   UIViewContentModeCenter = 4
 };
 
-typedef unsigned int UIControlState;
+typedef NSUInteger UIControlState;
 enum {
   UIControlStateNormal = 0,
   UIControlStateHighlighted = 1 << 0,
@@ -58,7 +61,7 @@ enum {
   UIControlStateSelected = 1 << 2
 };
 
-typedef unsigned int UIControlEvents;
+typedef NSUInteger UIControlEvents;
 enum {
   UIControlEventTouchDown = 1 << 0,
   UIControlEventTouchDownRepeat = 1 << 1,
@@ -79,7 +82,7 @@ enum {
   UIControlEventAllEvents = 0xffffffff
 };
 
-typedef int UITableViewCellSelectionStyle;
+typedef NSInteger UITableViewCellSelectionStyle;
 enum {
   UITableViewCellSelectionStyleNone = 0,
   UITableViewCellSelectionStyleBlue = 1,
@@ -87,7 +90,7 @@ enum {
   UITableViewCellSelectionStyleDefault = 3
 };
 
-typedef int UIKeyboardType;
+typedef NSInteger UIKeyboardType;
 enum {
   UIKeyboardTypeDefault = 0,
   UIKeyboardTypeASCIICapable = 1,
@@ -98,7 +101,7 @@ enum {
   UIKeyboardTypeEmailAddress = 7
 };
 
-typedef int UIReturnKeyType;
+typedef NSInteger UIReturnKeyType;
 enum {
   UIReturnKeyDefault = 0,
   UIReturnKeyGo = 1,
@@ -106,14 +109,14 @@ enum {
   UIReturnKeyDone = 9
 };
 
-typedef int UIActivityIndicatorViewStyle;
+typedef NSInteger UIActivityIndicatorViewStyle;
 enum {
   UIActivityIndicatorViewStyleWhiteLarge = 0,
   UIActivityIndicatorViewStyleWhite = 1,
   UIActivityIndicatorViewStyleGray = 2
 };
 
-typedef int UIInterfaceOrientation;
+typedef NSInteger UIInterfaceOrientation;
 enum {
   UIInterfaceOrientationPortrait = 1,
   UIInterfaceOrientationPortraitUpsideDown = 2,
@@ -121,19 +124,19 @@ enum {
   UIInterfaceOrientationLandscapeRight = 4
 };
 
-typedef int UICollectionViewScrollDirection;
+typedef NSInteger UICollectionViewScrollDirection;
 enum {
   UICollectionViewScrollDirectionVertical = 0,
   UICollectionViewScrollDirectionHorizontal = 1
 };
 
-typedef int UILayoutConstraintAxis;
+typedef NSInteger UILayoutConstraintAxis;
 enum {
   UILayoutConstraintAxisHorizontal = 0,
   UILayoutConstraintAxisVertical = 1
 };
 
-typedef int UIStackViewAlignment;
+typedef NSInteger UIStackViewAlignment;
 enum {
   UIStackViewAlignmentFill = 0,
   UIStackViewAlignmentLeading = 1,
@@ -145,7 +148,7 @@ enum {
   UIStackViewAlignmentLastBaseline = 5
 };
 
-typedef int UIStackViewDistribution;
+typedef NSInteger UIStackViewDistribution;
 enum {
   UIStackViewDistributionFill = 0,
   UIStackViewDistributionFillEqually = 1,

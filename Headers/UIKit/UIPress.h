@@ -36,9 +36,8 @@ enum {
   NSString *_characters;
   NSString *_charactersIgnoringModifiers;
   NSUInteger _modifierFlags;
-  NSEvent *_NSEvent;
+  id _NSEvent;
 }
-+ (UIPress *)pressWithNSEvent:(NSEvent *)event responder:(UIResponder *)responder;
 - (id)initWithType:(UIPressType)type
              phase:(UIPressPhase)phase
          timestamp:(NSTimeInterval)timestamp
@@ -51,7 +50,6 @@ enum {
 - (NSString *)characters;
 - (NSString *)charactersIgnoringModifiers;
 - (NSUInteger)modifierFlags;
-- (NSEvent *)NSEvent;
 @end
 
 #endif

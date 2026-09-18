@@ -1,3 +1,4 @@
+#import "UIKitPrivate.h"
 #import <UIKit/UISwitch.h>
 
 @implementation UISwitch
@@ -11,7 +12,7 @@
       [_switchButton setTitle:@""];
       [_switchButton setTarget:self];
       [_switchButton setAction:@selector(_uiSwitchChanged:)];
-      [(NSView *)self addSubview:_switchButton];
+      [self _addNativeSubview:_switchButton];
     }
   return self;
 }

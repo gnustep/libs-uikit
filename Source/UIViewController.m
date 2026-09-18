@@ -89,7 +89,9 @@
 - (void)viewDidAppear:(BOOL)animated {}
 - (void)viewWillDisappear:(BOOL)animated {}
 - (void)viewDidDisappear:(BOOL)animated {}
-- (UIResponder *)nextResponder { return _parentViewController ?: (UIResponder *)[_view window]; }
+- (UIResponder *)nextResponder { return [_view superview] ?: (UIResponder *)[_view window]; }
+- (UIWindow *)_responderWindow { return [_view window]; }
+- (NSResponder *)_nativeResponder { return [[self view] _nativeView]; }
 - (NSString *)title { return _title; }
 - (void)setTitle:(NSString *)title { ASSIGNCOPY(_title, title); }
 @end

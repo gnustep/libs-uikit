@@ -1,3 +1,4 @@
+#import "UIKitPrivate.h"
 #import <UIKit/UIApplication.h>
 #import <UIKit/UIEvent.h>
 #import <UIKit/UISceneConfiguration.h>
@@ -97,6 +98,33 @@ NSString *UIApplicationWillTerminateNotification = @"UIApplicationWillTerminateN
   SEL selector = active ? @selector(applicationDidBecomeActive:) : @selector(applicationWillResignActive:);
   if ([_delegate respondsToSelector:selector]) [_delegate performSelector:selector withObject:self];
 }
+- (UIWindow *)keyWindow
+{
+  for (UIWindow *window in _windows) if ([window isKeyWindow]) return window;
+  return nil;
+}
+- (BOOL)sendAction:(SEL)action to:(id)target from:(id)sender forEvent:(UIEvent *)event
+{
+  if (!target) {
+    UIResponder *responder = [[self keyWindow] _firstResponder];
+    if (!responder && [sender isKindOfClass:[UIResponder class]]) responder = sender;
+    while (responder) {
+      if ([responder canPerformAction:action withSender:sender]) { target = responder; break; }
+      responder = [responder nextResponder];
+    }
+    if (!target && [_delegate respondsToSelector:action]) target = _delegate;
+  }
+  if (![target respondsToSelector:action]) return NO;
+  NSMethodSignature *signature = [target methodSignatureForSelector:action];
+  NSUInteger count = [signature numberOfArguments];
+  if (count < 2 || count > 4) return NO;
+  NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
+  [invocation setTarget:target]; [invocation setSelector:action];
+  if (count > 2) [invocation setArgument:&sender atIndex:2];
+  if (count > 3) [invocation setArgument:&event atIndex:3];
+  [invocation invoke];
+  return YES;
+}
 - (void)sendEvent:(UIEvent *)event
 {
   NSEvent *nativeEvent = nil;
@@ -125,7 +153,7 @@ int UIApplicationMain(int argc, char **argv, NSString *principalClassName, NSStr
 
   [NSApplication sharedApplication];
   Class applicationClass = principalClassName ? NSClassFromString(principalClassName) : [UIApplication class];
-  application = [applicationClass sharedApplication];
+  application = (UIApplication *)[applicationClass sharedApplication];
 
   delegateClass = delegateClassName == nil ? Nil : NSClassFromString(delegateClassName);
   if (delegateClass != Nil)

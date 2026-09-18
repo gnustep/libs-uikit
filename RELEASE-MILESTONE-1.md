@@ -1,4 +1,4 @@
-# Desktop core 0.1 release candidate
+# Desktop core coverage (0.2 development)
 
 This change establishes a tested GNUstep desktop core. It is a release candidate,
 not an assertion of complete UIKit compatibility or successful ports of existing
@@ -7,12 +7,15 @@ is performed by this work.
 
 ## Compatibility boundary
 
-The supported target is the frame-based Objective-C surface listed below on
-GNUstep GUI. The rendering style is the native GNUstep theme. This is source-level
-adaptation, not an iOS ABI implementation. `UIView` still inherits `NSView` and
-`UIWindow` still inherits `NSWindow`; replacing those with private backend peers
-remains an architectural migration. `UIResponder` now inherits `NSResponder`, so
-it can safely participate in the backend responder chain.
+The target is unchanged Objective-C application source. The implementation
+currently covers the frame-based subset below. UIKit objects own private native
+peers; public view hierarchies contain UIKit objects only. UIKit class inheritance
+and responder routing no longer depend on AppKit inheritance. Rendering remains
+theme-dependent and does not yet match iOS visually.
+
+The 0.2 changes break the former desktop adapter ABI: rebuild clients (library
+interface version 1). Explicit backend integrations import `GNUstepUIKit.h`;
+ordinary UIKit applications must not need that extension.
 
 The acceptance corpus currently consists of the automated core scenarios, a XIB
 fixture, and the Core Catalog application's directory, editor, gallery, and canvas.
@@ -99,15 +102,15 @@ On 2026-09-12:
 ## Remaining release gates
 
 1. Select and port independent applications covering the supported API surface;
-   record every required adaptation and turn compatibility failures into tests.
+   keep their application sources unchanged and turn compatibility failures into framework tests.
 2. Run a differential subset of the behavioral tests against the chosen Apple
    UIKit SDK. Current tests assert expected behavior but are GNUstep-hosted and
    have backend-specific setup; they are not Apple conformance results.
 3. Complete long-running ownership, accessibility, keyboard/IME, resize, and
    performance qualification on each supported backend. Automated tests and a
    short catalog smoke run do not establish production readiness.
-4. Decide whether 0.1 ships as a documented desktop adapter or waits for the public
-   hierarchy migration. Do not advertise unmodified UIKit application support.
+4. Meet the unchanged-source qualification gates in `SOURCE-COMPATIBILITY.md`.
+   The UIKit-only contract test is a regression fixture, not independent app qualification.
 
 ## Explicit limits
 
@@ -124,6 +127,5 @@ On 2026-09-12:
 - XIB support is a subset of XML elements, not compiled iOS nib/storyboard fidelity.
 - Scene transitions adapt the desktop lifecycle; multiple independent scene
   sessions, restoration, and mobile background execution are not implemented.
-- Native AppKit views remain observable in the hierarchy. Code depending on UIKit
-  inheritance, exact view-tree identity, rendering, or unsupported selectors needs
-  further implementation rather than superficial API declarations.
+- Full rendering fidelity and unsupported selectors still require implementation.
+  Public hierarchy tests do not establish complete UIKit behavioral equivalence.

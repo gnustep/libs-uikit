@@ -1,4 +1,6 @@
-#import <UIKit/UIKit.h>
+#ifndef GNUSTEP_UIKIT_PRIVATE_H
+#define GNUSTEP_UIKIT_PRIVATE_H
+#import <UIKit/GNUstepUIKit.h>
 
 @interface UIColor (UIKitPrivate)
 + (UIColor *)_colorWithNSColor:(NSColor *)color;
@@ -76,3 +78,78 @@ UIKitNSColorFromRGBA(CGFloat red, CGFloat green, CGFloat blue, CGFloat alpha)
 @interface UIView (UIKitControllerOwnership)
 - (void)_setOwningViewController:(id)controller;
 @end
+
+
+@interface _UIKitViewPeer : NSView
+{
+@public
+  UIView *owner; /* non-owning; UIView owns the peer */
+}
+@end
+@interface _UIKitWindowPeer : NSWindow
+{
+@public
+  UIWindow *owner; /* non-owning; UIWindow owns the peer */
+}
+@end
+@interface UIView (UIKitBackend)
+- (NSView *)_nativeContainerView;
+- (NSView *)_nativeCoordinateView;
+- (void)_addNativeSubview:(NSView *)view;
+- (void)_nativeFrameChanged:(CGRect)frame;
+- (void)_sortSubviewsUsingFunction:(NSComparisonResult (*)(id,id,void *))function context:(void *)context;
+- (void)_willMoveToWindow:(UIWindow *)window;
+- (void)_didMoveToWindow;
+- (void)_cancelActiveTouch;
+- (void)_deliverMouse:(NSEvent *)event phase:(UITouchPhase)phase;
+- (void)mouseDown:(NSEvent *)event;
+- (void)mouseDragged:(NSEvent *)event;
+- (void)mouseUp:(NSEvent *)event;
+- (void)resizeWithOldSuperviewSize:(CGSize)size;
+- (void)_syncNativeSubviewOrder;
+@end
+@interface UIResponder (UIKitBackend)
+- (UIWindow *)_responderWindow;
+- (NSResponder *)_nativeResponder;
+@end
+@interface UIWindow (UIKitBackend)
+- (UIResponder *)_firstResponder;
+- (BOOL)_makeFirstResponder:(UIResponder *)responder;
+- (void)_nativeWindowWillClose;
+@end
+@interface UIColor (UIKitNativeColor)
+- (NSColor *)NSColor;
+@end
+@interface UIFont (UIKitNativeFont)
+- (NSFont *)NSFont;
+@end
+@interface UIImage (UIKitNativeImage)
+- (id)initWithNSImage:(NSImage *)image;
+- (NSImage *)NSImage;
+@end
+@interface UIEvent (UIKitNativeEvent)
++ (UIEvent *)eventWithNSEvent:(NSEvent *)event;
+- (id)initWithNSEvent:(NSEvent *)event;
+- (NSEvent *)NSEvent;
+@end
+@interface UITouch (UIKitNativeTouch)
++ (UITouch *)touchWithNSEvent:(NSEvent *)event view:(UIView *)view;
+- (NSEvent *)NSEvent;
+@end
+@interface UIPress (UIKitNativePress)
++ (UIPress *)pressWithNSEvent:(NSEvent *)event responder:(UIResponder *)responder;
+- (NSEvent *)NSEvent;
+@end
+static inline UIWindow *UIKitWindowForNativeWindow(NSWindow *window)
+{ return [window isKindOfClass:[_UIKitWindowPeer class]] ? ((_UIKitWindowPeer *)window)->owner : nil; }
+static inline GNUstepNSTextAlignment UIKitNativeTextAlignment(NSTextAlignment alignment)
+{
+  switch (alignment) {
+    case NSTextAlignmentCenter: return NSCenterTextAlignment;
+    case NSTextAlignmentRight: return NSRightTextAlignment;
+    case NSTextAlignmentJustified: return NSJustifiedTextAlignment;
+    case NSTextAlignmentNatural: return NSNaturalTextAlignment;
+    default: return NSLeftTextAlignment;
+  }
+}
+#endif

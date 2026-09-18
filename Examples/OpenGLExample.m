@@ -1,4 +1,5 @@
-#import <UIKit/UIKit.h>
+#import <UIKit/UIOpenGLView.h>
+#import <UIKit/GNUstepUIKit.h>
 
 #if defined(__APPLE__)
 #import <OpenGL/gl.h>
@@ -167,10 +168,10 @@
   (void)application;
 
   _window = [[UIWindow alloc] initWithFrame:CGRectMake(120, 120, 480, 360)];
-  _openGLView = [[OpenGLDemoView alloc] initWithFrame:[[_window contentView] bounds]];
+  _openGLView = [[OpenGLDemoView alloc] initWithFrame:[[_window _nativeView] bounds]];
 
-  [_window setTitle:@"GNUstep UIKit OpenGL Example"];
-  [[_window contentView] addSubview:_openGLView];
+  [[_window _nativeWindow] setTitle:@"GNUstep UIKit OpenGL Example"];
+  [[_window _nativeView] addSubview:_openGLView];
   [_window makeKeyAndVisible];
   [_openGLView setNeedsDisplay:YES];
 }

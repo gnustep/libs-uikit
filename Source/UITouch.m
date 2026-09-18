@@ -1,3 +1,4 @@
+#import "UIKitPrivate.h"
 #import <UIKit/UITouch.h>
 #import <UIKit/UIView.h>
 #import <UIKit/UIWindow.h>
@@ -5,8 +6,8 @@
 @implementation UITouch
 + (UITouch *)touchWithNSEvent:(NSEvent *)event view:(UIView *)view
 {
-  UIWindow *window = (UIWindow *)[event window];
-  CGPoint location = [event locationInWindow];
+  UIWindow *window = UIKitWindowForNativeWindow([event window]);
+  CGPoint location = [[window _nativeView] convertPoint:[event locationInWindow] fromView:nil];
   UITouch *touch;
 
   touch = [[[self alloc] initWithLocation:location
@@ -54,7 +55,7 @@
 {
   if (view == nil || _window == nil)
     return location;
-  return [(NSView *)view convertPoint:location fromView:nil];
+  return [view convertPoint:location fromView:nil];
 }
 - (CGPoint)locationInView:(UIView *)view
 {
@@ -67,7 +68,7 @@
 - (void)_updateWithNSEvent:(NSEvent *)event phase:(UITouchPhase)phase
 {
   _previousLocationInWindow = _locationInWindow;
-  _locationInWindow = [event locationInWindow]; _timestamp = [event timestamp]; _phase = phase;
+  _locationInWindow = [[_window _nativeView] convertPoint:[event locationInWindow] fromView:nil]; _timestamp = [event timestamp]; _phase = phase;
   ASSIGN(_NSEvent, event);
 }
 - (NSEvent *)NSEvent { return _NSEvent; }

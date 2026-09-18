@@ -54,7 +54,7 @@ UICollectionViewCellSubviewOrdering(id left, id right, void *context)
       [_backgroundView setFrame:[self bounds]];
       [_backgroundView setAutoresizingMask:(UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight)];
       [super addSubview:_backgroundView];
-      [self sortSubviewsUsingFunction:UICollectionViewCellSubviewOrdering context:self];
+      [self _sortSubviewsUsingFunction:UICollectionViewCellSubviewOrdering context:self];
     }
 }
 - (UIView *)selectedBackgroundView { return _selectedBackgroundView; }
@@ -68,7 +68,7 @@ UICollectionViewCellSubviewOrdering(id left, id right, void *context)
       [_selectedBackgroundView setAutoresizingMask:(UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight)];
       [_selectedBackgroundView setHidden:(_selected == NO)];
       [super addSubview:_selectedBackgroundView];
-      [self sortSubviewsUsingFunction:UICollectionViewCellSubviewOrdering context:self];
+      [self _sortSubviewsUsingFunction:UICollectionViewCellSubviewOrdering context:self];
     }
 }
 - (void)_setReuseIdentifier:(NSString *)identifier { ASSIGNCOPY(_reuseIdentifier, identifier); }

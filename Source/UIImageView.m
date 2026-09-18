@@ -17,7 +17,7 @@
 - (void)setImage:(UIImage *)image
 {
   ASSIGN(_image, image);
-  [self setNeedsDisplay:YES];
+  [self setNeedsDisplay];
 }
 - (void)drawRect:(NSRect)rect
 {

@@ -7,7 +7,7 @@
 
 @interface UILabel : UIView
 {
-  NSTextField *_textField;
+  id _textField;
   NSTextAlignment _textAlignment;
   NSInteger _numberOfLines;
 }

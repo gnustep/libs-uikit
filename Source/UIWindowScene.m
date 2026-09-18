@@ -1,3 +1,4 @@
+#import "UIKitPrivate.h"
 #import <UIKit/UIScreen.h>
 #import <UIKit/UIWindow.h>
 #import <UIKit/UIWindowScene.h>

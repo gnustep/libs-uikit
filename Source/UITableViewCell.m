@@ -1,3 +1,4 @@
+#import "UIKitPrivate.h"
 #import <UIKit/UILabel.h>
 #import <UIKit/UITableViewCell.h>
 #import <UIKit/UIColor.h>

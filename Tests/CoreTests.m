@@ -1,6 +1,7 @@
-#import <UIKit/UIKit.h>
+#import "../Source/UIKitPrivate.h"
 #include <stdio.h>
 
+extern void UIKitRunPublicContract(void);
 static int checks;
 #define CHECK(condition) do { checks++; if (!(condition)) { fprintf(stderr, "FAIL %s:%d: %s\n", __FILE__, __LINE__, #condition); exit(1); } } while (0)
 
@@ -92,15 +93,25 @@ static int checks;
 static NSEvent *mouseEvent(NSEventType type, CGPoint point, UIWindow *window, NSTimeInterval time)
 {
   return [NSEvent mouseEventWithType:type location:point modifierFlags:0 timestamp:time
-    windowNumber:[window windowNumber] context:nil eventNumber:1 clickCount:1 pressure:1];
+    windowNumber:[[window _nativeWindow] windowNumber] context:nil eventNumber:1 clickCount:1 pressure:1];
 }
 static void testInput(void)
 {
   UIWindow *window = [[[UIWindow alloc] initWithFrame:CGRectMake(0,0,320,240)] autorelease];
   TouchProbe *view = [[[TouchProbe alloc] initWithFrame:CGRectMake(0,0,320,240)] autorelease];
-  [window setContentView:view]; [window makeKeyAndVisible];
-  CHECK([view becomeFirstResponder]); CHECK([window firstResponder] == view);
-  CHECK([view resignFirstResponder]); CHECK([window firstResponder] != view);
+  [window addSubview:view]; [window makeKeyAndVisible];
+  CHECK([view becomeFirstResponder]); CHECK([window _firstResponder] == view);
+  CHECK([view resignFirstResponder]); CHECK([window _firstResponder] != view);
+  UITextField *field = [[[UITextField alloc] initWithFrame:CGRectMake(0,0,100,30)] autorelease];
+  [view addSubview:field];
+  CHECK([[window _nativeWindow] makeFirstResponder:[field _nativeResponder]]);
+  CHECK([field isFirstResponder]);
+  CHECK([field resignFirstResponder]);
+  [field removeFromSuperview];
+  [view setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
+  [[window _nativeWindow] setContentSize:NSMakeSize(400,300)];
+  CHECK([window bounds].size.width == 400 && [view frame].size.width == 400);
+  [[window _nativeWindow] setContentSize:NSMakeSize(320,240)];
   [view mouseDown:mouseEvent(NSLeftMouseDown, CGPointMake(20,20), window, 1)];
   [view mouseDragged:mouseEvent(NSLeftMouseDragged, CGPointMake(30,20), window, 2)];
   [view mouseUp:mouseEvent(NSLeftMouseUp, CGPointMake(30,20), window, 3)];
@@ -128,7 +139,11 @@ static void testResourcesAndScenes(void)
   NSBundle *bundle = [NSBundle bundleWithPath:path]; CHECK(bundle != nil);
   NibController *controller = [[[NibController alloc] initWithNibName:@"Form" bundle:bundle] autorelease];
   CHECK(![controller isViewLoaded]); [controller loadViewIfNeeded]; [controller loadViewIfNeeded];
-  CHECK(controller->loaded == 1); CHECK([controller->button isDescendantOf:[controller view]]);
+  NibController *bundleOwner = [[[NibController alloc] init] autorelease];
+  NSArray *loaded = [bundle loadNibNamed:@"Form" owner:bundleOwner options:nil];
+  CHECK([loaded isKindOfClass:[NSArray class]] && [loaded count] > 0);
+  CHECK(bundleOwner->button != nil);
+  CHECK(controller->loaded == 1); CHECK([controller->button isDescendantOfView:[controller view]]);
   [controller->button sendActionsForControlEvents:UIControlEventValueChanged]; CHECK(controller->saves == 0);
   [controller->button sendActionsForControlEvents:UIControlEventTouchUpInside]; CHECK(controller->saves == 1);
   UISceneConfiguration *configuration = [UISceneConfiguration configurationWithName:@"Test" sessionRole:UISceneSessionRoleApplication];
@@ -147,7 +162,7 @@ static void testViews(void)
   LayoutProbe *parent = [[[LayoutProbe alloc] initWithFrame:CGRectMake(0,0,200,200)] autorelease];
   LayoutProbe *child = [[[LayoutProbe alloc] initWithFrame:CGRectMake(10,20,50,50)] autorelease];
   [parent addSubview:child]; [child setNeedsLayout]; [parent layoutIfNeeded];
-  CHECK([parent isFlipped]); CHECK(child->layouts > 0);
+  CHECK([[parent _nativeView] isFlipped]); CHECK(child->layouts > 0);
   int layouts = child->layouts; [parent layoutIfNeeded]; CHECK(child->layouts == layouts);
   [child setAutoresizingMask:UIViewAutoresizingFlexibleTopMargin];
   [parent setFrame:CGRectMake(0,0,200,300)];
@@ -156,7 +171,7 @@ static void testViews(void)
   UIView *content = [[[UIView alloc] initWithFrame:CGRectMake(0,0,100,100)] autorelease];
   [scroll addSubview:content];
   CHECK([[scroll subviews] containsObject:content]);
-  CHECK([content isDescendantOf:scroll]);
+  CHECK([content isDescendantOfView:scroll]);
   [scroll setContentSize:CGSizeMake(200,2000)]; [scroll setContentOffset:CGPointMake(0,500)];
   CHECK([scroll contentOffset].y == 500);
   [scroll setContentOffset:CGPointMake(-50,100000)];
@@ -180,18 +195,18 @@ static void testControls(void)
   UIButton *button = [UIButton buttonWithType:0];
   [button setTitle:@"Normal" forState:UIControlStateNormal]; [button setTitle:@"Disabled" forState:UIControlStateDisabled];
   CHECK([[button titleForState:UIControlStateNormal] isEqual:@"Normal"]);
-  [button setEnabled:NO]; CHECK([[[[button subviews] firstObject] title] isEqual:@"Disabled"]);
-  [button setEnabled:YES]; CHECK([[[[button subviews] firstObject] title] isEqual:@"Normal"]);
+  [button setEnabled:NO]; CHECK([[[[[button _nativeView] subviews] firstObject] title] isEqual:@"Disabled"]);
+  [button setEnabled:YES]; CHECK([[[[[button _nativeView] subviews] firstObject] title] isEqual:@"Normal"]);
   UITextField *field = [[[UITextField alloc] initWithFrame:CGRectMake(0,0,100,30)] autorelease];
   [field setText:@"secret"]; [field setSecureTextEntry:YES];
-  CHECK([[[field subviews] firstObject] isKindOfClass:[NSSecureTextField class]]);
+  CHECK([[[[field _nativeView] subviews] firstObject] isKindOfClass:[NSSecureTextField class]]);
   CHECK([[field text] isEqual:@"secret"]);
-  [field setSecureTextEntry:NO]; CHECK(![[[field subviews] firstObject] isKindOfClass:[NSSecureTextField class]]);
+  [field setSecureTextEntry:NO]; CHECK(![[[[field _nativeView] subviews] firstObject] isKindOfClass:[NSSecureTextField class]]);
   CHECK([[field text] isEqual:@"secret"]);
   [field addTarget:target action:@selector(one:) forControlEvents:UIControlEventEditingChanged];
   NSUInteger before = target->calls;
   [field setText:@"programmatic"]; CHECK(target->calls == before);
-  [[NSNotificationCenter defaultCenter] postNotificationName:NSControlTextDidChangeNotification object:[[field subviews] firstObject]];
+  [[NSNotificationCenter defaultCenter] postNotificationName:NSControlTextDidChangeNotification object:[[[field _nativeView] subviews] firstObject]];
   CHECK(target->calls == before + 1);
 }
 
@@ -206,18 +221,18 @@ static void testControllers(void)
   [window makeKeyAndVisible]; CHECK([[root->events lastObject] isEqual:@"didAppear"]);
   UIView *host = [nav view];
   [nav pushViewController:detail animated:NO]; CHECK([nav view] == host);
-  CHECK([[window contentView] isEqual:host]); CHECK([[detail view] isDescendantOf:host]);
-  CHECK(![[root view] isDescendantOf:host]); CHECK([detail parentViewController] == nav);
+  CHECK([[window subviews] containsObject:host]); CHECK([[detail view] isDescendantOfView:host]);
+  CHECK(![[root view] isDescendantOfView:host]); CHECK([detail parentViewController] == nav);
   CHECK([[root->events lastObject] isEqual:@"didDisappear"]);
   CHECK([[detail->events componentsJoinedByString:@","] isEqual:@"load,willAppear,didAppear"]);
   CHECK([nav popViewControllerAnimated:NO] == detail); CHECK([detail parentViewController] == nil);
-  CHECK([[root view] isDescendantOf:host]); CHECK([[detail->events lastObject] isEqual:@"didDisappear"]);
+  CHECK([[root view] isDescendantOfView:host]); CHECK([[detail->events lastObject] isEqual:@"didDisappear"]);
   UITabBarController *tabs = [[[UITabBarController alloc] init] autorelease];
   ProbeController *other = [[[ProbeController alloc] init] autorelease];
   [tabs setViewControllers:[NSArray arrayWithObjects:detail,other,nil]];
   [window setRootViewController:tabs]; [tabs setSelectedIndex:1];
-  CHECK([tabs selectedViewController] == other); CHECK([[other view] isDescendantOf:[tabs view]]);
-  CHECK(![[detail view] isDescendantOf:[tabs view]]);
+  CHECK([tabs selectedViewController] == other); CHECK([[other view] isDescendantOfView:[tabs view]]);
+  CHECK(![[detail view] isDescendantOfView:[tabs view]]);
   [tabs setViewControllers:[NSArray array]]; CHECK([tabs selectedViewController] == nil);
   CHECK([other parentViewController] == nil); CHECK([[tabs childViewControllers] count] == 0);
   [window close];
@@ -240,12 +255,12 @@ static void testLists(void)
   CHECK([table cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]] == nil);
   CHECK([[table visibleCells] count] < 20);
   UIWindow *window = [[[UIWindow alloc] initWithFrame:CGRectMake(0,0,320,240)] autorelease];
-  [window setContentView:table]; [window makeKeyAndVisible];
+  [window addSubview:table]; [window makeKeyAndVisible];
   [table setContentOffset:CGPointZero];
   UITableViewCell *first = [table cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]];
-  CGPoint click = [first convertPoint:CGPointMake(20,20) toView:nil];
-  [window sendEvent:mouseEvent(NSLeftMouseDown, click, window, 1)];
-  [window sendEvent:mouseEvent(NSLeftMouseUp, click, window, 2)];
+  CGPoint click = [[first _nativeView] convertPoint:CGPointMake(20,20) toView:nil];
+  [[window _nativeWindow] sendEvent:mouseEvent(NSLeftMouseDown, click, window, 1)];
+  [[window _nativeWindow] sendEvent:mouseEvent(NSLeftMouseUp, click, window, 2)];
   CHECK(source->selections == 1);
   CHECK([[table indexPathForSelectedRow] isEqual:[NSIndexPath indexPathForRow:0 inSection:0]]);
   [window close];
@@ -271,6 +286,7 @@ int main(void)
   NSAutoreleasePool *pool = [NSAutoreleasePool new];
   [NSApplication sharedApplication];
   @try {
+    UIKitRunPublicContract();
     fprintf(stderr, "Views\n"); testViews(); fprintf(stderr, "Controls\n"); testControls();
     fprintf(stderr, "Controllers\n"); testControllers(); fprintf(stderr, "Lists\n"); testLists();
     fprintf(stderr, "Input\n"); testInput(); fprintf(stderr, "Resources and scenes\n"); testResourcesAndScenes();

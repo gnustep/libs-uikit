@@ -1,3 +1,4 @@
+#import "UIKitPrivate.h"
 #import <UIKit/UIEvent.h>
 #import <UIKit/UITouch.h>
 #import <UIKit/UIView.h>
@@ -51,7 +52,7 @@
           default:
             break;
         }
-      touch = [UITouch touchWithNSEvent:event view:(UIView *)[[event window] contentView]];
+      touch = [UITouch touchWithNSEvent:event view:UIKitWindowForNativeWindow([event window])];
       [touch setPhase:phase];
       _allTouches = [[NSSet alloc] initWithObjects:touch, nil];
     }

@@ -11,7 +11,7 @@
       [_textField setDelegate:(id)self];
       [_textField setTarget:self];
       [_textField setAction:@selector(_uiTextFieldAction:)];
-      [(NSView *)self addSubview:_textField];
+      [self _addNativeSubview:_textField];
       _textAlignment = NSTextAlignmentLeft;
     }
   return self;
@@ -27,8 +27,7 @@
 - (void)controlTextDidChange:(NSNotification *)note { [self sendActionsForControlEvents:UIControlEventEditingChanged]; }
 - (void)controlTextDidEndEditing:(NSNotification *)note { [self sendActionsForControlEvents:UIControlEventEditingDidEnd]; }
 - (BOOL)canBecomeFirstResponder { return [self isEnabled]; }
-- (BOOL)becomeFirstResponder { return [self canBecomeFirstResponder] && [[self window] makeFirstResponder:_textField]; }
-- (BOOL)resignFirstResponder { return [[self window] makeFirstResponder:nil]; }
+- (NSResponder *)_nativeResponder { return _textField; }
 - (NSString *)text { return [_textField stringValue]; }
 - (void)setText:(NSString *)text { [_textField setStringValue:(text == nil ? @"" : text)]; }
 - (NSString *)placeholder { return _placeholder; }
@@ -55,17 +54,17 @@
   [replacement setDelegate:(id)self];
   if ([replacement respondsToSelector:@selector(setPlaceholderString:)]) [replacement setPlaceholderString:_placeholder];
   BOOL editing = [_textField currentEditor] != nil;
-  if (editing) [[self window] makeFirstResponder:nil];
+  if (editing) [[self window] _makeFirstResponder:nil];
   [_textField setDelegate:nil]; [_textField removeFromSuperview]; [_textField release];
   _textField = replacement; _secureTextEntry = secureTextEntry;
-  [super addSubview:(UIView *)_textField];
+  [self _addNativeSubview:_textField];
   if (editing) [self becomeFirstResponder];
 }
 - (NSTextAlignment)textAlignment { return _textAlignment; }
 - (void)setTextAlignment:(NSTextAlignment)alignment
 {
   _textAlignment = alignment;
-  [_textField setAlignment:(NSTextAlignment)alignment];
+  [_textField setAlignment:UIKitNativeTextAlignment(alignment)];
 }
 - (void)setEnabled:(BOOL)enabled
 {

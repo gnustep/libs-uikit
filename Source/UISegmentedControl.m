@@ -1,3 +1,4 @@
+#import "UIKitPrivate.h"
 #import <UIKit/UISegmentedControl.h>
 
 @implementation UISegmentedControl
@@ -21,7 +22,7 @@
       [_segmentedControl setAutoresizingMask:(NSViewWidthSizable | NSViewHeightSizable)];
       [_segmentedControl setTarget:self];
       [_segmentedControl setAction:@selector(_uiSegmentChanged:)];
-      [(NSView *)self addSubview:_segmentedControl];
+      [self _addNativeSubview:_segmentedControl];
     }
   return self;
 }

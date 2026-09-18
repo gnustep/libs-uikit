@@ -1,19 +1,16 @@
 # libs-uikit
 
-`libs-uikit` is a GNUstep Objective-C library that provides a UIKit-like API on
-top of GNUstep Base and GUI. It is intended for code that wants familiar UIKit
-class names and application structure while running in a GNUstep/AppKit
-environment.
+`libs-uikit` implements a growing Objective-C UIKit compatibility layer on GNUstep.
+The target is **zero application source changes**: compatibility work belongs in
+this framework and its build/resource tooling. Applications must be rebuilt for
+the target platform; this is not an iOS binary loader.
 
-The library currently exposes a focused subset of UIKit-style classes including
-application/window management, views and view controllers, common controls,
-table/navigation/tab containers, images, colors, fonts, nib loading helpers, and
-basic device/screen abstractions.
-
-The 0.1 desktop core candidate adds tested navigation, forms, viewport-based lists,
-basic touch/gesture handling, and a runnable catalog. It remains an AppKit-backed
-UIKit subset. See [the milestone scope and release gates](RELEASE-MILESTONE-1.md)
-for tested behavior, build/test commands, and explicit compatibility limits.
+The 0.2 development version separates UIKit objects from private AppKit peers.
+`UIResponder` inherits `NSObject`, `UIView` inherits `UIResponder`, and `UIWindow`
+inherits `UIView`. Ordinary applications import `<UIKit/UIKit.h>` without AppKit.
+The supported implementation is still a subset; arbitrary iPhone applications
+cannot yet be expected to run unchanged. See [the compatibility contract and
+remaining gates](SOURCE-COMPATIBILITY.md) and [tested coverage](RELEASE-MILESTONE-1.md).
 
 ## AI Disclosure
 
@@ -113,8 +110,7 @@ int main(int argc, char **argv)
 }
 ```
 
-The public API is intentionally modeled around UIKit names, but the underlying
-types are GNUstep/AppKit types. For example, `CGPoint`, `CGSize`, and `CGRect`
+Geometry currently uses GNUstep Foundation types. For example, `CGPoint`, `CGSize`, and `CGRect`
 are typedefs for `NSPoint`, `NSSize`, and `NSRect`.
 
 ## Implemented Public Headers

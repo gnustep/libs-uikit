@@ -5,7 +5,7 @@
 
 @interface UIActivityIndicatorView : UIView
 {
-  NSProgressIndicator *_progressIndicator;
+  id _progressIndicator;
 }
 - (id)initWithActivityIndicatorStyle:(UIActivityIndicatorViewStyle)style;
 - (void)startAnimating;

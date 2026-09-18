@@ -6,24 +6,21 @@
   self = [super initWithFrame:frame];
   if (self != nil)
     {
-      _scrollView = [[NSScrollView alloc] initWithFrame:[self bounds]];
-      [_scrollView setAutoresizingMask:(NSViewWidthSizable | NSViewHeightSizable)];
-      [_scrollView setHasVerticalScroller:YES];
-      [_scrollView setHasHorizontalScroller:NO];
       _textView = [[NSTextView alloc] initWithFrame:[self bounds]];
-      [_scrollView setDocumentView:_textView];
-      [(NSView *)self addSubview:_scrollView];
+      [_textView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+      [[self _nativeContainerView] addSubview:_textView];
     }
   return self;
 }
 - (void)dealloc
 {
-  [_scrollView release];
   [_textView release];
   [_font release];
   [_textColor release];
   [super dealloc];
 }
+- (BOOL)canBecomeFirstResponder { return YES; }
+- (NSResponder *)_nativeResponder { return _textView; }
 - (NSString *)text { return [_textView string]; }
 - (void)setText:(NSString *)text { [_textView setString:(text == nil ? @"" : text)]; }
 - (UIFont *)font { return _font; }

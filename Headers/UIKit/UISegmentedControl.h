@@ -5,7 +5,7 @@
 
 @interface UISegmentedControl : UIControl
 {
-  NSSegmentedControl *_segmentedControl;
+  id _segmentedControl;
 }
 - (id)initWithItems:(NSArray *)items;
 - (NSUInteger)numberOfSegments;

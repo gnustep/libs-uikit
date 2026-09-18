@@ -26,9 +26,8 @@ enum {
   CGPoint _previousLocationInWindow;
   UIWindow *_window;
   UIView *_view;
-  NSEvent *_NSEvent;
+  id _NSEvent;
 }
-+ (UITouch *)touchWithNSEvent:(NSEvent *)event view:(UIView *)view;
 - (id)initWithLocation:(CGPoint)location
               inWindow:(UIWindow *)window
                   view:(UIView *)view
@@ -43,7 +42,6 @@ enum {
 - (UIView *)view;
 - (CGPoint)locationInView:(UIView *)view;
 - (CGPoint)previousLocationInView:(UIView *)view;
-- (NSEvent *)NSEvent;
 @end
 
 #endif

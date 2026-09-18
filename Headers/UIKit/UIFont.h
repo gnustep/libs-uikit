@@ -5,7 +5,7 @@
 
 @interface UIFont : NSObject
 {
-  NSFont *_font;
+  id _font;
 }
 + (UIFont *)systemFontOfSize:(CGFloat)fontSize;
 + (UIFont *)boldSystemFontOfSize:(CGFloat)fontSize;
@@ -13,7 +13,6 @@
 - (CGFloat)pointSize;
 - (NSString *)fontName;
 - (CGFloat)lineHeight;
-- (NSFont *)NSFont;
 @end
 
 #endif

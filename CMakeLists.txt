@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 
-project(libs-uikit VERSION 0.1.0 LANGUAGES C OBJC)
+project(libs-uikit VERSION 0.2.0 LANGUAGES C OBJC)
 
 if(ANDROID)
 
@@ -91,7 +91,7 @@ foreach(source IN LISTS UIKIT_SOURCE_NAMES)
   list(APPEND UIKIT_SOURCES "Source/${source}")
 endforeach()
 add_library(libs-uikit SHARED ${UIKIT_SOURCES})
-set_target_properties(libs-uikit PROPERTIES OUTPUT_NAME s-uikit VERSION ${PROJECT_VERSION} SOVERSION 0)
+set_target_properties(libs-uikit PROPERTIES OUTPUT_NAME s-uikit VERSION ${PROJECT_VERSION} SOVERSION 1)
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/Source/Sources.list")
 
 target_compile_options(libs-uikit PRIVATE -std=gnu11)
@@ -114,7 +114,7 @@ else()
   target_link_options(UIKitCoreCatalog PRIVATE "-Wl,-rpath,$<TARGET_FILE_DIR:libs-uikit>")
   include(CTest)
   if(BUILD_TESTING)
-    add_executable(UIKitCoreTests Tests/CoreTests.m)
+    add_executable(UIKitCoreTests Tests/CoreTests.m Tests/UIKitContract.m)
     target_link_libraries(UIKitCoreTests PRIVATE libs-uikit)
     target_link_options(UIKitCoreTests PRIVATE "-Wl,-rpath,$<TARGET_FILE_DIR:libs-uikit>")
     add_test(NAME UIKitCore COMMAND UIKitCoreTests)

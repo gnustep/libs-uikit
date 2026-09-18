@@ -1,17 +1,43 @@
+#import "UIKitPrivate.h"
 #import <UIKit/UIScrollView.h>
 
+/* UIKit indicators overlay the content; AppKit scrollers normally consume
+   viewport space (and can appear on the left under a theme). */
+@interface _UIKitScrollPeer : NSScrollView
+@end
+@implementation _UIKitScrollPeer
+- (void)tile
+{
+  [super tile];
+  NSRect bounds = [self bounds];
+  [[self contentView] setFrame:bounds];
+  CGFloat width = [NSScroller scrollerWidth];
+  [[self verticalScroller] setFrame:NSMakeRect(NSMaxX(bounds)-width, 0, width, NSHeight(bounds))];
+  [[self horizontalScroller] setFrame:NSMakeRect(0, NSMaxY(bounds)-width, NSWidth(bounds)-width, width)];
+}
+@end
+
+@interface _UIKitScrollDocumentView : NSView { @public UIScrollView *owner; }
+@end
+@implementation _UIKitScrollDocumentView
+- (BOOL)isFlipped { return YES; }
+- (void)mouseDown:(NSEvent *)event { [owner mouseDown:event]; }
+- (void)mouseDragged:(NSEvent *)event { [owner mouseDragged:event]; }
+- (void)mouseUp:(NSEvent *)event { [owner mouseUp:event]; }
+@end
 @implementation UIScrollView
 - (id)initWithFrame:(CGRect)frame
 {
   self = [super initWithFrame:frame];
   if (self) {
-    _scrollView = [[NSScrollView alloc] initWithFrame:[self bounds]];
+    _scrollView = [[_UIKitScrollPeer alloc] initWithFrame:[self bounds]];
     [_scrollView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
     [_scrollView setHasVerticalScroller:YES];
     [_scrollView setHasHorizontalScroller:YES];
-    _documentView = [[UIView alloc] initWithFrame:[self bounds]];
+    _documentView = [[_UIKitScrollDocumentView alloc] initWithFrame:[self bounds]];
+    ((_UIKitScrollDocumentView *)_documentView)->owner = self;
     [_scrollView setDocumentView:_documentView];
-    [super addSubview:(UIView *)_scrollView];
+    [self _addNativeSubview:_scrollView];
     _contentSize = frame.size;
     [[_scrollView contentView] setPostsBoundsChangedNotifications:YES];
     [[NSNotificationCenter defaultCenter] addObserver:self
@@ -23,13 +49,16 @@
 - (void)dealloc
 {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+  ((_UIKitScrollDocumentView *)_documentView)->owner = nil;
   [_scrollView release]; [_documentView release];
   [super dealloc];
 }
 - (id)delegate { return _scrollDelegate; }
 - (void)setDelegate:(id)delegate { _scrollDelegate = delegate; }
-- (void)addSubview:(UIView *)view { [_documentView addSubview:view]; }
-- (NSArray *)subviews { return [_documentView subviews]; }
+- (NSView *)_nativeContainerView { return _documentView ?: [super _nativeContainerView]; }
+- (NSView *)_nativeCoordinateView { return _documentView ?: [super _nativeCoordinateView]; }
+- (CGRect)bounds { CGRect bounds = [super bounds]; bounds.origin = [self contentOffset]; return bounds; }
+- (void)setBounds:(CGRect)bounds { CGRect nativeBounds = bounds; nativeBounds.origin = CGPointZero; [super setBounds:nativeBounds]; [self setContentOffset:bounds.origin]; }
 - (CGSize)contentSize { return _contentSize; }
 - (void)setContentSize:(CGSize)size
 {
@@ -63,7 +92,7 @@
 - (void)layoutSubviews
 {
   [super layoutSubviews];
-  [_scrollView setFrame:[self bounds]];
+  [_scrollView setFrame:CGRectMake(0,0,[self bounds].size.width,[self bounds].size.height)];
   [self _clipBoundsChanged:nil];
 }
 @end

@@ -38,18 +38,15 @@ enum {
   UIEventType _type;
   UIEventSubtype _subtype;
   NSSet *_allTouches;
-  NSEvent *_NSEvent;
+  id _NSEvent;
 }
-+ (UIEvent *)eventWithNSEvent:(NSEvent *)event;
 - (id)initWithType:(UIEventType)type subtype:(UIEventSubtype)subtype timestamp:(NSTimeInterval)timestamp;
-- (id)initWithNSEvent:(NSEvent *)event;
 - (NSTimeInterval)timestamp;
 - (UIEventType)type;
 - (UIEventSubtype)subtype;
 - (NSSet *)allTouches;
 - (NSSet *)touchesForView:(UIView *)view;
 - (NSSet *)touchesForWindow:(UIWindow *)window;
-- (NSEvent *)NSEvent;
 @end
 
 #endif

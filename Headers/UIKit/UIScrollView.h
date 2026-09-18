@@ -5,8 +5,8 @@
 
 @interface UIScrollView : UIView
 {
-  NSScrollView *_scrollView;
-  UIView *_documentView;
+  id _scrollView;
+  id _documentView;
   CGSize _contentSize;
   id _scrollDelegate;
   BOOL _updatingVisibleContent;

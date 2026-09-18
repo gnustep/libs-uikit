@@ -1,3 +1,4 @@
+#import "UIKitPrivate.h"
 #import <UIKit/UIPressesEvent.h>
 #import <UIKit/UIPress.h>
 

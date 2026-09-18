@@ -13,7 +13,7 @@
       [_textField setEditable:NO];
       [_textField setDrawsBackground:NO];
       [_textField setSelectable:NO];
-      [(NSView *)self addSubview:_textField];
+      [self _addNativeSubview:_textField];
       _textAlignment = NSTextAlignmentLeft;
       [self setNumberOfLines:1];
     }
@@ -34,7 +34,7 @@
 - (void)setTextAlignment:(NSTextAlignment)alignment
 {
   _textAlignment = alignment;
-  [_textField setAlignment:(NSTextAlignment)alignment];
+  [_textField setAlignment:UIKitNativeTextAlignment(alignment)];
 }
 - (NSInteger)numberOfLines { return _numberOfLines; }
 - (void)setNumberOfLines:(NSInteger)numberOfLines

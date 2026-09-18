@@ -1,14 +1,13 @@
 #ifndef GNUSTEP_UIKIT_UITEXTVIEW_H
 #define GNUSTEP_UIKIT_UITEXTVIEW_H
 
-#import <UIKit/UIView.h>
+#import <UIKit/UIScrollView.h>
 
 @class UIColor, UIFont;
 
-@interface UITextView : UIView
+@interface UITextView : UIScrollView
 {
-  NSScrollView *_scrollView;
-  NSTextView *_textView;
+  id _textView;
   UIFont *_font;
   UIColor *_textColor;
 }

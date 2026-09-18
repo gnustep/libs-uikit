@@ -1,3 +1,4 @@
+#import "UIKitPrivate.h"
 #import <UIKit/NSIndexPath+UIKit.h>
 
 #if defined(__clang__)

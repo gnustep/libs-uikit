@@ -1,4 +1,4 @@
-#import <UIKit/UIKit.h>
+#import <UIKit/GNUstepUIKit.h>
 
 /* A small, runnable application exercising the desktop core without AppKit
    widgets in its screens. Window creation remains a GNUstep backend extension. */
@@ -116,7 +116,7 @@
 - (void)applicationDidFinishLaunching:(UIApplication *)application
 {
   _window = [[UIWindow alloc] initWithFrame:CGRectMake(40,40,480,600)];
-  [_window setTitle:@"GNUstep UIKit Core Catalog"];
+  [[_window _nativeWindow] setTitle:@"GNUstep UIKit Core Catalog"];
   _directory = [[DirectoryController alloc] init];
   _navigation = [[UINavigationController alloc] initWithRootViewController:_directory]; [_navigation setTitle:@"Directory"];
   _tabs = [[UITabBarController alloc] init];
@@ -130,8 +130,8 @@
   NSString *directory = [[[NSProcessInfo processInfo] environment] objectForKey:@"UIKIT_SCREENSHOT_DIR"];
   if (!directory) return;
   [[NSFileManager defaultManager] createDirectoryAtPath:directory withIntermediateDirectories:YES attributes:nil error:NULL];
-  NSView *view = [_window contentView];
-  [(UIView *)view layoutIfNeeded]; [_window display];
+  NSView *view = [_window _nativeView];
+  [_window layoutIfNeeded]; [[_window _nativeWindow] display];
   NSBitmapImageRep *bitmap = [view bitmapImageRepForCachingDisplayInRect:[view bounds]];
   [view cacheDisplayInRect:[view bounds] toBitmapImageRep:bitmap];
   [[bitmap representationUsingType:NSPNGFileType properties:[NSDictionary dictionary]] writeToFile:[directory stringByAppendingPathComponent:[name stringByAppendingString:@".png"]] atomically:YES];
@@ -140,7 +140,7 @@
 {
   @try {
     [self snapshot:@"directory"];
-    [_directory tableView:[_directory view] didSelectRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]];
+    [_directory tableView:(UITableView *)[_directory view] didSelectRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]];
     [(FormController *)[_navigation topViewController] save:nil]; [self snapshot:@"form"];
     [_navigation popViewControllerAnimated:NO];
     [_tabs setSelectedIndex:1]; [self snapshot:@"gallery"];

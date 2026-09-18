@@ -1,3 +1,4 @@
+#import "UIKitPrivate.h"
 #import <UIKit/UIKit.h>
 #include <math.h>
 

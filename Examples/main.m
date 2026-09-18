@@ -1,4 +1,4 @@
-#import <UIKit/UIKit.h>
+#import <UIKit/GNUstepUIKit.h>
 
 @interface ExampleViewController : UIViewController
 {
@@ -52,7 +52,7 @@
 {
   _window = [[UIWindow alloc] initWithFrame:CGRectMake(80, 80, 420, 320)];
   _viewController = [[ExampleViewController alloc] initWithNibName:@"MainView" bundle:nil];
-  [_window setTitle:@"GNUstep UIKit Example"];
+  [[_window _nativeWindow] setTitle:@"GNUstep UIKit Example"];
   [_window setRootViewController:_viewController];
   [_window makeKeyAndVisible];
 }

@@ -1,3 +1,4 @@
+#import "UIKitPrivate.h"
 #import <UIKit/UICollectionView.h>
 #import <UIKit/UICollectionViewFlowLayout.h>
 #import <UIKit/NSIndexPath+UIKit.h>

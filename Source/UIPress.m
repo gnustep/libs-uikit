@@ -1,3 +1,4 @@
+#import "UIKitPrivate.h"
 #import <UIKit/UIPress.h>
 #import <UIKit/UIResponder.h>
 

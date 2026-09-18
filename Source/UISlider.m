@@ -1,3 +1,4 @@
+#import "UIKitPrivate.h"
 #import <UIKit/UISlider.h>
 
 @implementation UISlider
@@ -12,7 +13,7 @@
       [_slider setMaxValue:1.0];
       [_slider setTarget:self];
       [_slider setAction:@selector(_uiSliderChanged:)];
-      [(NSView *)self addSubview:_slider];
+      [self _addNativeSubview:_slider];
     }
   return self;
 }

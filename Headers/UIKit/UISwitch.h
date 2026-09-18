@@ -5,7 +5,7 @@
 
 @interface UISwitch : UIControl
 {
-  NSButton *_switchButton;
+  id _switchButton;
 }
 - (BOOL)isOn;
 - (void)setOn:(BOOL)on;

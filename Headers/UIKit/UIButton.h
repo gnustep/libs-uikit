@@ -5,7 +5,7 @@
 
 @interface UIButton : UIControl
 {
-  NSButton *_button;
+  id _button;
   NSMutableDictionary *_titles;
 }
 + (UIButton *)buttonWithType:(int)buttonType;

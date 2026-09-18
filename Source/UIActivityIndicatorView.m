@@ -1,3 +1,4 @@
+#import "UIKitPrivate.h"
 #import <UIKit/UIActivityIndicatorView.h>
 
 @implementation UIActivityIndicatorView
@@ -11,9 +12,9 @@
   if (self != nil)
     {
       _progressIndicator = [[NSProgressIndicator alloc] initWithFrame:[self bounds]];
-      [_progressIndicator setStyle:NSProgressIndicatorSpinningStyle];
+      [(NSProgressIndicator *)_progressIndicator setStyle:NSProgressIndicatorSpinningStyle];
       [_progressIndicator setIndeterminate:YES];
-      [(NSView *)self addSubview:_progressIndicator];
+      [self _addNativeSubview:_progressIndicator];
     }
   return self;
 }
