@@ -10,6 +10,7 @@
   NSMutableDictionary *_objectsByID;
   NSMutableArray *_pendingOutlets;
   NSMutableArray *_pendingActions;
+  NSMutableArray *_pendingConstraints;
 }
 - (id)initWithOwner:(id)owner bundle:(NSBundle *)bundle;
 - (NSArray *)parseFile:(NSString *)path;
@@ -29,6 +30,7 @@
       _objectsByID = [[NSMutableDictionary alloc] init];
       _pendingOutlets = [[NSMutableArray alloc] init];
       _pendingActions = [[NSMutableArray alloc] init];
+      _pendingConstraints = [[NSMutableArray alloc] init];
     }
   return self;
 }
@@ -40,6 +42,7 @@
   [_objectsByID release];
   [_pendingOutlets release];
   [_pendingActions release];
+  [_pendingConstraints release];
   [super dealloc];
 }
 - (NSString *)_classNameForElement:(NSString *)element attributes:(NSDictionary *)attributes
@@ -76,6 +79,9 @@
     return @"UITableViewCell";
   if ([element isEqualToString:@"activityIndicatorView"])
     return @"UIActivityIndicatorView";
+  if ([element isEqualToString:@"collectionView"]) return @"UICollectionView";
+  if ([element isEqualToString:@"tableViewController"]) return @"UITableViewController";
+  if ([element isEqualToString:@"collectionViewController"]) return @"UICollectionViewController";
   if ([element isEqualToString:@"viewController"])
     return @"UIViewController";
   if ([element isEqualToString:@"navigationController"])
@@ -159,6 +165,8 @@
       NSString *maximumValue = [attributes objectForKey:@"maxValue"];
       NSString *on = [attributes objectForKey:@"on"];
 
+      if ([object isKindOfClass:[UIView class]] && [attributes objectForKey:@"translatesAutoresizingMaskIntoConstraints"])
+        [object setTranslatesAutoresizingMaskIntoConstraints:[[attributes objectForKey:@"translatesAutoresizingMaskIntoConstraints"] boolValue]];
       if (objectID != nil)
         [_objectsByID setObject:object forKey:objectID];
       if (tag != nil && [object respondsToSelector:@selector(setTag:)])
@@ -184,6 +192,47 @@
     }
 
   return object;
+}
+- (NSLayoutAttribute)_layoutAttribute:(NSString *)name
+{
+  NSArray *names = [NSArray arrayWithObjects:@"left", @"right", @"top", @"bottom", @"leading", @"trailing", @"width", @"height", @"centerX", @"centerY", nil];
+  if (!name) return NSLayoutAttributeNotAnAttribute;
+  NSUInteger index = [names indexOfObject:name];
+  if (index == NSNotFound) [NSException raise:NSInvalidArgumentException format:@"Unsupported XIB layout attribute %@", name];
+  return index+1;
+}
+- (void)_connectPendingConstraints
+{
+  for (NSDictionary *spec in _pendingConstraints) {
+    NSDictionary *attributes = [spec objectForKey:@"attributes"];
+    NSString *firstID = [attributes objectForKey:@"firstItem"], *secondID = [attributes objectForKey:@"secondItem"];
+    id first = firstID ? [_objectsByID objectForKey:firstID] : [spec objectForKey:@"owner"];
+    id second = secondID ? [_objectsByID objectForKey:secondID] : nil;
+    if (!first || (secondID && !second))
+      [NSException raise:NSInvalidArgumentException format:@"XIB constraint references an unknown item"];
+    NSString *relationName = [attributes objectForKey:@"relation"];
+    NSLayoutRelation relation = NSLayoutRelationEqual;
+    if ([relationName isEqual:@"lessThanOrEqual"]) relation = NSLayoutRelationLessThanOrEqual;
+    else if ([relationName isEqual:@"greaterThanOrEqual"]) relation = NSLayoutRelationGreaterThanOrEqual;
+    else if (relationName && ![relationName isEqual:@"equal"])
+      [NSException raise:NSInvalidArgumentException format:@"Unsupported XIB constraint relation %@", relationName];
+    CGFloat multiplier = 1;
+    NSString *value = [attributes objectForKey:@"multiplier"];
+    if (value) {
+      NSArray *ratio = [value componentsSeparatedByString:@":"];
+      multiplier = [[ratio objectAtIndex:0] doubleValue];
+      if ([ratio count] == 2) multiplier /= [[ratio objectAtIndex:1] doubleValue];
+      else if ([ratio count] != 1) [NSException raise:NSInvalidArgumentException format:@"Invalid XIB multiplier %@", value];
+    }
+    NSLayoutConstraint *constraint = [NSLayoutConstraint constraintWithItem:first
+      attribute:[self _layoutAttribute:[attributes objectForKey:@"firstAttribute"]] relatedBy:relation
+      toItem:second attribute:[self _layoutAttribute:[attributes objectForKey:@"secondAttribute"]]
+      multiplier:multiplier constant:[[attributes objectForKey:@"constant"] doubleValue]];
+    if ([attributes objectForKey:@"priority"]) constraint.priority = [[attributes objectForKey:@"priority"] floatValue];
+    constraint.identifier = [attributes objectForKey:@"identifier"];
+    if ([attributes objectForKey:@"id"]) [_objectsByID setObject:constraint forKey:[attributes objectForKey:@"id"]];
+    if (![[attributes objectForKey:@"installed"] isEqual:@"NO"]) constraint.active = YES;
+  }
 }
 - (void)_connectPendingReferences
 {
@@ -227,6 +276,7 @@
   if ([parser parse] == NO)
     [NSException raise:NSInvalidArgumentException format:@"Invalid XIB %@: %@", path, [parser parserError]];
 
+  [self _connectPendingConstraints];
   [self _connectPendingReferences];
 
   if (_owner != nil && [_owner respondsToSelector:@selector(setView:)])
@@ -252,6 +302,21 @@
   id parent = [_objectStack lastObject];
   [_elementStack addObject:[NSNull null]];
 
+  if ([elementName isEqual:@"constraint"]) {
+    if (!parent) [NSException raise:NSInvalidArgumentException format:@"XIB constraint has no owner"];
+    [_pendingConstraints addObject:[NSDictionary dictionaryWithObjectsAndKeys:attributeDict, @"attributes", parent, @"owner", nil]];
+    return;
+  }
+  if ([elementName isEqual:@"viewLayoutGuide"]) {
+    if (![parent isKindOfClass:[UIView class]]) [NSException raise:NSInvalidArgumentException format:@"XIB layout guide has no view"];
+    NSString *key = [attributeDict objectForKey:@"key"];
+    UILayoutGuide *guide;
+    if ([key isEqual:@"safeArea"]) guide = [parent safeAreaLayoutGuide];
+    else if ([key isEqual:@"layoutMargins"]) guide = [parent layoutMarginsGuide];
+    else { guide = [[[UILayoutGuide alloc] init] autorelease]; [(UIView *)parent addLayoutGuide:guide]; }
+    if ([attributeDict objectForKey:@"id"]) [_objectsByID setObject:guide forKey:[attributeDict objectForKey:@"id"]];
+    return;
+  }
   if ([self _isObjectElement:elementName attributes:attributeDict])
     {
       id object = [self _objectForElement:elementName attributes:attributeDict];
@@ -259,6 +324,8 @@
         {
           if ([parent isKindOfClass:[UIView class]] && [object isKindOfClass:[UIView class]])
             [(UIView *)parent addSubview:object];
+          else if ([parent isKindOfClass:[UIViewController class]] && [object isKindOfClass:[UIView class]])
+            [(UIViewController *)parent setView:object];
           else if (object != _owner)
             [_topLevelObjects addObject:object];
           [_objectStack addObject:object];

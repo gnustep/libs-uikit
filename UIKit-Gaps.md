@@ -49,8 +49,6 @@ independent scene sessions, restoration, and mobile lifecycle services remain.
 
 ### View Controllers and Presentation
 
-- `UITableViewController`
-- `UICollectionViewController`
 - `UISplitViewController`
 - `UIPageViewController`
 - `UIAlertController`
@@ -60,9 +58,10 @@ independent scene sessions, restoration, and mobile lifecycle services remain.
 - `UIPopoverPresentationController`
 - `UIPresentationController`
 
-The current implementation has base, navigation, and tab view controllers, but
-does not include many common UIKit controller subclasses or presentation
-controller types.
+The implementation has base, navigation, tab, table, and collection controllers.
+The list controllers provide lazy view creation, delegate/data-source wiring,
+appearance reloads and selection clearing. Modal presentation and the controller
+types listed above remain absent.
 
 ### Bars, Items, and Navigation UI
 
@@ -114,16 +113,32 @@ APIs above remain unimplemented.
 
 ### Layout, Traits, and Appearance
 
-- `UILayoutGuide`
-- `NSLayoutConstraint` UIKit integration
 - `UITraitCollection`
 - `UIAppearance`
 - `UIBarAppearance`
 - `UINavigationBarAppearance`
 - `UITabBarAppearance`
 
-The current implementation includes `UIStackView`, but does not expose UIKit's
-layout guide, trait collection, or appearance-customization APIs.
+The implementation includes `UIStackView` and a first constraint-layout subset:
+anchors, dimension multipliers, equalities/inequalities, mutable constants and
+priorities, activation on common ancestors, custom guides, layout margins,
+desktop safe-area guides, and intrinsic-size hugging/compression priorities.
+Labels, buttons and text fields supply intrinsic sizes. XML XIB constraints use
+the same engine.
+
+This is not complete Auto Layout. Visual Format Language, baseline/margin
+attributes, RTL-aware leading/trailing, fitting-size APIs, full autoresizing-mask
+constraint translation, multiline intrinsic-height negotiation and incremental
+solver performance remain. Optional constraints are admitted greedily by priority
+and insertion order; they do not minimize aggregate error within a priority tier.
+Safe-area insets are currently zero for desktop view content, without propagation
+of controller bars, occlusion or additional safe-area insets. Traits and appearance
+APIs remain absent.
+
+Public `NSLayoutConstraint` and anchor names are compile-time aliases to UIKit
+runtime classes so they do not collide with GNUstep AppKit's native classes.
+Runtime lookup by Apple class-name strings and constraint archive decoding are
+not covered by this source-compatibility implementation.
 
 ### Drawing, Text, and Fonts
 
@@ -134,9 +149,12 @@ layout guide, trait collection, or appearance-customization APIs.
 - `NSTextContainer`
 - Text input accessory and input view management classes
 
-The current implementation has `UIColor`, `UIImage`, `UIFont`, `UILabel`,
-`UITextField`, and `UITextView`, but does not expose broader UIKit drawing or
-TextKit-style APIs.
+The implementation has `UIColor`, `UIImage`, `UIFont`, `UILabel`, `UITextField`
+and `UITextView`. Text editing now forwards begin/end permission, character-change
+vetoes and editing callbacks to UIKit delegates; text fields also support Return
+permission. Text views expose attributed text, selection, editability and
+selectability. Full UITextInput/TextKit, keyboard traits, IME qualification,
+attributed labels and broader UIKit drawing APIs remain incomplete.
 
 ### Documents, Pasteboard, Printing, and Sharing
 

@@ -49,7 +49,7 @@ make
 The top-level build includes both subprojects:
 
 - `Source` builds the `libs-uikit` shared library.
-- `Examples` builds `UIKitExample` and `UIKitCoreCatalog`. The OpenGL example is
+- `Examples` builds `UIKitExample`, `UIKitCoreCatalog`, and `UIKitStudio`. The OpenGL example is
   opt-in with `UIKIT_BUILD_OPENGL_EXAMPLE=yes`.
 
 To build only the library:
@@ -85,6 +85,15 @@ cmake --build build-android
 `lib/<abi>`. If your Objective-C runtime is not libobjc2's GNUstep 2.0 runtime,
 override `UIKIT_ANDROID_OBJC_RUNTIME`.
 
+## Shared-source graphical demo
+
+[UIKit Studio](Examples/UIKitStudio/README.md) provides an interactive editor,
+reusable list, and color gallery. Its application files compile unchanged against
+Apple UIKit for the iOS Simulator and this GNUstep implementation. Open
+`Examples/UIKitStudio/UIKitStudio.xcodeproj` in Xcode, or build the `UIKitStudio`
+target with GNUmake/CMake. The example includes a simulator launch script and
+shared interaction smoke checks.
+
 ## Running The Example
 
 After building, run the example application from the `Examples` directory using
@@ -117,11 +126,13 @@ are typedefs for `NSPoint`, `NSSize`, and `NSRect`.
 
 - `UIApplication`, `UIResponder`, `UIScreen`, `UIDevice`
 - `UIView`, `UIWindow`, `UIViewController`
+- Constraint layout anchors, `NSLayoutConstraint`, `UILayoutGuide` (partial; see `UIKit-Gaps.md`)
 - `UIColor`, `UIImage`, `UIFont`
 - `UILabel`, `UIImageView`
 - `UIControl`, `UIButton`, `UITextField`, `UITextView`
 - `UISlider`, `UISwitch`, `UISegmentedControl`, `UIScrollView`
-- `UITableView`, `UITableViewCell`, `NSIndexPath+UIKit`
+- `UITableView`, `UITableViewCell`, `UITableViewController`, `NSIndexPath+UIKit`
+- `UICollectionView`, flow layout, cells, and `UICollectionViewController`
 - `UINavigationItem`, `UINavigationController`, `UITabBarController`
 - `UIActivityIndicatorView`, `UIAlertView`
 - `UINib`, `NSBundle+UIKit`

@@ -43,3 +43,6 @@ UIDevice.m
 UINib.m
 NSBundle+UIKit.m
 UIGestureRecognizer.m
+UILayout.m
+UITableViewController.m
+UICollectionViewController.m

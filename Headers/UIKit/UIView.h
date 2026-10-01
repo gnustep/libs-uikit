@@ -2,6 +2,8 @@
 #define GNUSTEP_UIKIT_UIVIEW_H
 
 #import <UIKit/UIResponder.h>
+#import <UIKit/UILayoutGuide.h>
+extern const CGFloat UIViewNoIntrinsicMetric;
 
 @class UIColor, UIEvent, UITouch, UIGestureRecognizer, UIWindow;
 
@@ -26,6 +28,14 @@
   UIView *_superview;
   BOOL _autoresizesSubviews;
   BOOL _clipsToBounds;
+  BOOL _translatesAutoresizingMaskIntoConstraints;
+  BOOL _uiNeedsUpdateConstraints;
+  BOOL _uiSolvingLayout;
+  NSMutableArray *_uiConstraints, *_uiLayoutGuides, *_uiConstraintReferences;
+  NSMutableDictionary *_uiAnchors;
+  UILayoutGuide *_safeAreaLayoutGuide, *_layoutMarginsGuide;
+  UIEdgeInsets _layoutMargins;
+  UILayoutPriority _uiHugging[2], _uiCompression[2];
 }
 - (id)initWithCoder:(NSCoder *)coder;
 - (UIWindow *)window;
@@ -89,6 +99,42 @@
 - (void)removeGestureRecognizer:(UIGestureRecognizer *)recognizer;
 - (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event;
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event;
+@end
+
+@interface UIView (UILayout)
+@property(nonatomic) BOOL translatesAutoresizingMaskIntoConstraints;
+@property(nonatomic, readonly) NSArray *constraints;
+@property(nonatomic, readonly) NSArray *layoutGuides;
+@property(nonatomic, readonly) UILayoutGuide *safeAreaLayoutGuide;
+@property(nonatomic, readonly) UILayoutGuide *layoutMarginsGuide;
+@property(nonatomic, readonly) UIEdgeInsets safeAreaInsets;
+@property(nonatomic) UIEdgeInsets layoutMargins;
+@property(nonatomic, readonly) NSLayoutXAxisAnchor *leftAnchor;
+@property(nonatomic, readonly) NSLayoutXAxisAnchor *rightAnchor;
+@property(nonatomic, readonly) NSLayoutXAxisAnchor *leadingAnchor;
+@property(nonatomic, readonly) NSLayoutXAxisAnchor *trailingAnchor;
+@property(nonatomic, readonly) NSLayoutYAxisAnchor *topAnchor;
+@property(nonatomic, readonly) NSLayoutYAxisAnchor *bottomAnchor;
+@property(nonatomic, readonly) NSLayoutXAxisAnchor *centerXAnchor;
+@property(nonatomic, readonly) NSLayoutYAxisAnchor *centerYAnchor;
+@property(nonatomic, readonly) NSLayoutDimension *widthAnchor;
+@property(nonatomic, readonly) NSLayoutDimension *heightAnchor;
+- (void)addConstraint:(NSLayoutConstraint *)constraint;
+- (void)addConstraints:(NSArray *)constraints;
+- (void)removeConstraint:(NSLayoutConstraint *)constraint;
+- (void)removeConstraints:(NSArray *)constraints;
+- (void)addLayoutGuide:(UILayoutGuide *)guide;
+- (void)removeLayoutGuide:(UILayoutGuide *)guide;
+- (CGSize)intrinsicContentSize;
+- (void)invalidateIntrinsicContentSize;
+- (UILayoutPriority)contentHuggingPriorityForAxis:(UILayoutConstraintAxis)axis;
+- (void)setContentHuggingPriority:(UILayoutPriority)priority forAxis:(UILayoutConstraintAxis)axis;
+- (UILayoutPriority)contentCompressionResistancePriorityForAxis:(UILayoutConstraintAxis)axis;
+- (void)setContentCompressionResistancePriority:(UILayoutPriority)priority forAxis:(UILayoutConstraintAxis)axis;
+- (void)setNeedsUpdateConstraints;
+- (BOOL)needsUpdateConstraints;
+- (void)updateConstraints;
+- (void)updateConstraintsIfNeeded;
 @end
 
 #endif

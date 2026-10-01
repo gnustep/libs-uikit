@@ -35,6 +35,7 @@
   self = [super init];
   if (self) {
     _frame = frame; _bounds = CGRectMake(0, 0, frame.size.width, frame.size.height);
+    [self _uiInitializeLayout];
     _subviews = [NSMutableArray new]; _gestureRecognizers = [NSMutableArray new];
     _userInteractionEnabled = YES; _autoresizesSubviews = YES; _alpha = 1;
     _nativeView = [[_UIKitViewPeer alloc] initWithFrame:frame];
@@ -46,6 +47,7 @@
 - (void)dealloc
 {
   [NSObject cancelPreviousPerformRequestsWithTarget:self];
+  [self _uiDestroyLayout];
   for (UIGestureRecognizer *recognizer in _gestureRecognizers) [recognizer _setView:nil];
   for (UIView *view in _subviews) view->_superview = nil;
   ((_UIKitViewPeer *)_nativeView)->owner = nil;
@@ -142,6 +144,7 @@
 {
   if (!_superview) return;
   [[self retain] autorelease]; UIView *parent = _superview;
+  [self _uiRemoveAncestorConstraints];
   [parent willRemoveSubview:self]; [self willMoveToSuperview:nil]; [self _willMoveToWindow:nil];
   [_nativeView removeFromSuperview]; _superview = nil; [parent->_subviews removeObjectIdenticalTo:self];
   [self didMoveToSuperview]; [self _didMoveToWindow]; [parent setNeedsLayout];
@@ -179,9 +182,14 @@
 }
 - (void)layoutIfNeeded
 {
-  [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(layoutIfNeeded) object:nil];
-  if (_uiNeedsLayout) { _uiNeedsLayout = NO; [self layoutSubviews]; }
-  for (UIView *view in [self subviews]) [view layoutIfNeeded];
+  UIView *root = self; while ([root superview]) root = [root superview];
+  if (root->_uiSolvingLayout) return;
+  root->_uiSolvingLayout = YES;
+  @try {
+    [root updateConstraintsIfNeeded];
+    [root _uiSolveLayout];
+    [root _uiLayoutPass];
+  } @finally { root->_uiSolvingLayout = NO; }
 }
 - (void)layoutSubviews {}
 - (CGSize)sizeThatFits:(CGSize)size { return [self bounds].size; }
@@ -222,6 +230,7 @@
    vertical autoresizing margins in flipped superviews. */
 - (void)resizeWithOldSuperviewSize:(NSSize)oldSize
 {
+  if (!_translatesAutoresizingMaskIntoConstraints) return;
   CGRect frame = [self frame];
   CGSize size = [[self superview] bounds].size;
   CGFloat *positions[2] = { &frame.origin.x, &frame.origin.y };

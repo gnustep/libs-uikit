@@ -45,6 +45,13 @@ remains necessary before calling the broader first-release goal complete.
 | Build | Shared source inventory, self-discovering makefiles, portable library linking, standalone headers, CMake/CTest, CI and Docker recipe | build commands below |
 
 Table and collection programmatic selection does not call user-selection delegates.
+Additional regression coverage in `Tests/LayoutTests.m` and
+`Tests/EditingAndControllerTests.m` exercises constraint resizing, sibling and
+nested coordinates, priority conflicts and inequalities, guides, intrinsic sizes,
+detachment and lifetime cleanup, native text-edit vetoes (including secure fields),
+Return permission, programmatic text changes, list-controller ownership and
+selection clearing, and XML XIB constraints across resizing.
+
 Cell object counts are bounded by the viewport; collection flow-layout attributes
 are still generated for the complete data set and filtered linearly. Large-data
 performance claims apply to cell creation, not constant-time layout queries.
@@ -99,6 +106,13 @@ On 2026-09-12:
 - Catalog PNGs were rendered and inspected during development. Native theme and
   toolchain warnings remain; these checks are not a warning-free-build claim.
 
+On 2026-10-01, the added layout/editing/list-controller/XIB scenarios and the
+existing core/catalog scenarios passed on Debian bookworm ARM64 under Xvfb.
+CMake/CTest, GNUmake and standalone public-header compilation were checked.
+AddressSanitizer also passed the core and catalog runs with leak detection disabled;
+this does not establish leak freedom or qualify macOS/Android runtime behavior.
+The new tests remain project-authored rather than Apple differential tests.
+
 ## Remaining release gates
 
 1. Select and port independent applications covering the supported API surface;
@@ -114,17 +128,22 @@ On 2026-09-12:
 
 ## Explicit limits
 
-- No Auto Layout, safe-area/trait system, layer animation, modal presentation,
-  standalone navigation/tab bar API, or restoration engine.
+- Constraint layout and desktop safe-area guides are now partial implementations;
+  see `UIKit-Gaps.md` for supported operations and solver limits. No trait system,
+  layer animation, modal presentation, standalone navigation/tab bar API, or
+  restoration engine.
 - Navigation and scroll `animated:` parameters currently apply changes immediately.
 - Lists support fixed-size cells and reloads, not batch updates, editing,
   supplementary views, self-sizing, diffable data sources, or grouped styling.
 - Gestures cover a mouse pointer on UIView content, not multitouch, recognizer
   failure dependencies, arbitration, or gestures intercepting native controls.
   Existing press wrappers are not a complete keyboard/focus delivery system.
-- Text editing is native; full UITextInput/TextKit integration, UIKit delegates,
-  Dynamic Type, attributed-label behavior and accessibility remain incomplete.
-- XIB support is a subset of XML elements, not compiled iOS nib/storyboard fidelity.
+- Text editing is native with UIKit delegate bridges and attributed text-view
+  support. Full UITextInput/TextKit, keyboard traits, Dynamic Type,
+  attributed-label behavior and accessibility remain incomplete.
+- XIB support includes basic constraints and layout guides but remains a subset
+  of XML elements. Compiled iOS nibs, storyboards, size-class variations and asset
+  catalogs are not implemented.
 - Scene transitions adapt the desktop lifecycle; multiple independent scene
   sessions, restoration, and mobile background execution are not implemented.
 - Full rendering fidelity and unsupported selectors still require implementation.

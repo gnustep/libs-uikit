@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0">
+  <objects>
+    <placeholder placeholderIdentifier="IBFilesOwner" id="owner" customClass="UIViewController">
+      <connections><outlet property="view" destination="root" id="view-outlet"/></connections>
+    </placeholder>
+    <view id="root">
+      <rect key="frame" x="0" y="0" width="320" height="200"/>
+      <subviews>
+        <view id="content" tag="41" translatesAutoresizingMaskIntoConstraints="NO">
+          <rect key="frame" x="0" y="0" width="1" height="1"/>
+          <constraints><constraint firstAttribute="height" constant="40" id="height"/></constraints>
+        </view>
+      </subviews>
+      <viewLayoutGuide key="safeArea" id="safe"/>
+      <constraints>
+        <constraint firstItem="content" firstAttribute="leading" secondItem="safe" secondAttribute="leading" constant="16" id="leading"/>
+        <constraint firstItem="content" firstAttribute="top" secondItem="safe" secondAttribute="top" constant="12" id="top"/>
+        <constraint firstItem="content" firstAttribute="width" secondItem="root" secondAttribute="width" multiplier="1:2" constant="-16" id="width"/>
+      </constraints>
+    </view>
+  </objects>
+</document>

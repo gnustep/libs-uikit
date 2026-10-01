@@ -65,8 +65,9 @@ unchanged-app acceptance corpus.
    them as a build step where necessary. Test custom classes, outlets, actions,
    localization and startup from bundle metadata. A blank fallback view is not
    a successful resource load.
-4. Add Auto Layout, intrinsic sizes, safe areas and traits; controller presentation,
-   navigation/bar APIs; drawing/layer/animation support; full text input/delegates;
+4. Complete the new constraint-layout, intrinsic-size and desktop safe-area subset
+   (see `UIKit-Gaps.md`), and add traits; controller presentation,
+   navigation/bar APIs; drawing/layer/animation support; complete text input/delegate coverage;
    touch arbitration, keyboard and accessibility. Expand the app corpus as these
    features become available. Native-control gesture interception and exact
    appearance remain incomplete even in the present frame-based subset.

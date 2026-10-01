@@ -7,7 +7,18 @@
 #define NSTextAlignmentRight GNUstepNSTextAlignmentRight
 #define NSTextAlignmentJustified GNUstepNSTextAlignmentJustified
 #define NSTextAlignmentNatural GNUstepNSTextAlignmentNatural
+#define NSLayoutConstraint GNUstepNSLayoutConstraint
+#define NSLayoutAnchor GNUstepNSLayoutAnchor
+#define NSLayoutXAxisAnchor GNUstepNSLayoutXAxisAnchor
+#define NSLayoutYAxisAnchor GNUstepNSLayoutYAxisAnchor
+#define NSLayoutDimension GNUstepNSLayoutDimension
 #import <AppKit/AppKit.h>
+#undef NSLayoutConstraint
+#undef NSLayoutAnchor
+#undef NSLayoutXAxisAnchor
+#undef NSLayoutYAxisAnchor
+#undef NSLayoutDimension
+
 #undef NSTextAlignment
 #undef NSTextAlignmentLeft
 #undef NSTextAlignmentCenter

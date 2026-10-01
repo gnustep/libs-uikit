@@ -16,6 +16,9 @@ libs-uikit_HEADER_FILES_DIR = ../Headers/UIKit
 libs-uikit_HEADER_FILES_INSTALL_DIR = /UIKit
 libs-uikit_HEADER_FILES = \
 	UIKit.h \
+	NSLayoutConstraint.h \
+	NSLayoutAnchor.h \
+	UILayoutGuide.h \
 	GNUstepUIKit.h \
 	UIKitTypes.h \
 	UIGestureRecognizer.h \
@@ -34,6 +37,8 @@ libs-uikit_HEADER_FILES = \
 	UIView.h \
 	UIWindow.h \
 	UIViewController.h \
+	UICollectionViewController.h \
+	UITableViewController.h \
 	UIColor.h \
 	UIImage.h \
 	UIFont.h \

@@ -19,6 +19,8 @@ extern "C" {
 #import <UIKit/UIView.h>
 #import <UIKit/UIWindow.h>
 #import <UIKit/UIViewController.h>
+#import <UIKit/UICollectionViewController.h>
+#import <UIKit/UITableViewController.h>
 #import <UIKit/UIColor.h>
 #import <UIKit/UIImage.h>
 #import <UIKit/UIFont.h>

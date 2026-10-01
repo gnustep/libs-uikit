@@ -43,7 +43,7 @@
   UIControlState state = (_enabled ? 0 : UIControlStateDisabled) | (_selected ? UIControlStateSelected : 0) | (_highlighted ? UIControlStateHighlighted : 0);
   NSString *title = [_titles objectForKey:[NSNumber numberWithUnsignedInt:state]];
   if (!title) title = [_titles objectForKey:[NSNumber numberWithUnsignedInt:UIControlStateNormal]];
-  [_button setTitle:title ?: @""];
+  [_button setTitle:title ?: @""]; [self invalidateIntrinsicContentSize];
 }
 - (void)setTitle:(NSString *)title forState:(UIControlState)state
 {
@@ -60,5 +60,6 @@
   [_button setEnabled:enabled];
   [self _updateTitle];
 }
+- (CGSize)intrinsicContentSize { return [[_button cell] cellSize]; }
 - (BOOL)isEnabled { return [_button isEnabled]; }
 @end

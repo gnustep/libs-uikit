@@ -92,6 +92,13 @@ UIKitNSColorFromRGBA(CGFloat red, CGFloat green, CGFloat blue, CGFloat alpha)
   UIWindow *owner; /* non-owning; UIWindow owns the peer */
 }
 @end
+@interface UIView (UIKitLayoutInternal)
+- (void)_uiInitializeLayout;
+- (void)_uiDestroyLayout;
+- (void)_uiRemoveAncestorConstraints;
+- (void)_uiSolveLayout;
+- (void)_uiLayoutPass;
+@end
 @interface UIView (UIKitBackend)
 - (NSView *)_nativeContainerView;
 - (NSView *)_nativeCoordinateView;

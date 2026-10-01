@@ -240,6 +240,11 @@ static void testControllers(void)
 
 static void testLists(void)
 {
+  UITableViewCell *colored = [[[UITableViewCell alloc] initWithStyle:0 reuseIdentifier:@"color"] autorelease];
+  UIColor *color = [UIColor redColor]; [colored setBackgroundColor:color];
+  [colored setSelected:YES]; [colored setSelected:NO];
+  CHECK([colored backgroundColor] == color);
+
   DataSource *source = [[[DataSource alloc] init] autorelease];
   UITableView *table = [[[UITableView alloc] initWithFrame:CGRectMake(0,0,320,240)] autorelease];
   [table registerClass:[UITableViewCell class] forCellReuseIdentifier:@"row"];
@@ -281,12 +286,17 @@ static void testLists(void)
   CHECK([[collection indexPathsForSelectedItems] count] == 0);
 }
 
+extern void testUIKitLayout(void);
+extern void testUIKitEditingAndControllers(void);
+
 int main(void)
 {
   NSAutoreleasePool *pool = [NSAutoreleasePool new];
   [NSApplication sharedApplication];
   @try {
     UIKitRunPublicContract();
+    testUIKitLayout();
+    testUIKitEditingAndControllers();
     fprintf(stderr, "Views\n"); testViews(); fprintf(stderr, "Controls\n"); testControls();
     fprintf(stderr, "Controllers\n"); testControllers(); fprintf(stderr, "Lists\n"); testLists();
     fprintf(stderr, "Input\n"); testInput(); fprintf(stderr, "Resources and scenes\n"); testResourcesAndScenes();

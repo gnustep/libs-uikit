@@ -31,6 +31,8 @@
   self = [super initWithFrame:frame];
   if (self) {
     _scrollView = [[_UIKitScrollPeer alloc] initWithFrame:[self bounds]];
+    [_scrollView setDrawsBackground:NO];
+    [[_scrollView contentView] setDrawsBackground:NO];
     [_scrollView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
     [_scrollView setHasVerticalScroller:YES];
     [_scrollView setHasHorizontalScroller:YES];

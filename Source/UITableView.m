@@ -28,7 +28,14 @@
 - (void)setRowHeight:(CGFloat)height
 {
   if (!isfinite(height) || height <= 0) [NSException raise:NSInvalidArgumentException format:@"rowHeight must be positive"];
-  _rowHeight = height; [self reloadData];
+  _rowHeight = height;
+  /* Changing geometry must not synchronously request a first batch of cells:
+     controllers commonly set rowHeight before registering cells in viewDidLoad. */
+  NSInteger total = 0;
+  for (NSNumber *count in _sectionRows) total += [count integerValue];
+  [self setContentSize:CGSizeMake([self bounds].size.width, total * _rowHeight)];
+  [self setContentOffset:[self contentOffset]];
+  [self setNeedsLayout];
 }
 - (NSInteger)numberOfSections { return [_sectionRows count]; }
 - (NSInteger)numberOfRowsInSection:(NSInteger)section
@@ -125,6 +132,15 @@
     [cell setFrame:[self rectForRowAtIndexPath:path]];
     [cell setSelected:[path isEqual:_selectedIndexPath] animated:NO];
     [_visibleCells addObject:cell];
+  }
+}
+- (void)layoutSubviews
+{
+  [super layoutSubviews];
+  CGSize size = [self contentSize];
+  if (size.width != [self bounds].size.width) {
+    size.width = [self bounds].size.width; [self setContentSize:size];
+    [self _updateVisibleContent];
   }
 }
 - (NSArray *)visibleCells { return [[_visibleCells copy] autorelease]; }

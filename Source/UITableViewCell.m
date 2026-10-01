@@ -33,21 +33,19 @@
 - (UILabel *)textLabel { return _textLabel; }
 - (NSString *)reuseIdentifier { return _reuseIdentifier; }
 - (UITableViewCellSelectionStyle)selectionStyle { return _selectionStyle; }
-- (void)setSelectionStyle:(UITableViewCellSelectionStyle)selectionStyle { _selectionStyle = selectionStyle; }
+- (void)setSelectionStyle:(UITableViewCellSelectionStyle)selectionStyle { _selectionStyle = selectionStyle; [self setNeedsDisplay]; }
 - (BOOL)isSelected { return _selected; }
 - (void)setSelected:(BOOL)selected { [self setSelected:selected animated:NO]; }
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated
 {
-  _selected = selected;
-  if (_selectionStyle == UITableViewCellSelectionStyleNone)
-    {
-      [self setBackgroundColor:nil];
-      return;
-    }
-  if (selected)
-    [self setBackgroundColor:[UIColor colorWithWhite:0.82 alpha:1.0]];
-  else
-    [self setBackgroundColor:nil];
+  _selected = selected; [self setNeedsDisplay];
+}
+- (void)drawRect:(CGRect)rect
+{
+  [super drawRect:rect];
+  if (_selected && _selectionStyle != UITableViewCellSelectionStyleNone) {
+    [[NSColor colorWithCalibratedWhite:0.82 alpha:1] set]; NSRectFill(rect);
+  }
 }
 - (void)prepareForReuse
 {

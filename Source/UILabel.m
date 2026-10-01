@@ -25,11 +25,11 @@
   [super dealloc];
 }
 - (NSString *)text { return [_textField stringValue]; }
-- (void)setText:(NSString *)text { [_textField setStringValue:(text == nil ? @"" : text)]; }
+- (void)setText:(NSString *)text { [_textField setStringValue:(text == nil ? @"" : text)]; [self invalidateIntrinsicContentSize]; }
 - (UIColor *)textColor { return [UIColor _colorWithNSColor:[_textField textColor]]; }
 - (void)setTextColor:(UIColor *)color { [_textField setTextColor:[color NSColor]]; }
 - (UIFont *)font { return [UIFont _fontWithNSFont:[_textField font]]; }
-- (void)setFont:(UIFont *)font { [_textField setFont:[font NSFont]]; }
+- (void)setFont:(UIFont *)font { [_textField setFont:[font NSFont]]; [self invalidateIntrinsicContentSize]; }
 - (NSTextAlignment)textAlignment { return _textAlignment; }
 - (void)setTextAlignment:(NSTextAlignment)alignment
 {
@@ -44,8 +44,9 @@
   [[_textField cell] setUsesSingleLineMode:_numberOfLines == 1];
   if ([_textField respondsToSelector:@selector(setMaximumNumberOfLines:)])
     [(id)_textField setMaximumNumberOfLines:_numberOfLines];
-  [self setNeedsLayout];
+  [self invalidateIntrinsicContentSize]; [self setNeedsLayout];
 }
+- (CGSize)intrinsicContentSize { return [self sizeThatFits:CGSizeMake(1000000, 1000000)]; }
 - (CGSize)sizeThatFits:(CGSize)size
 {
   NSDictionary *attributes = [NSDictionary dictionaryWithObject:[_textField font] forKey:NSFontAttributeName];

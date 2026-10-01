@@ -3,6 +3,12 @@
 
 #import <UIKit/UIView.h>
 
+@class UIScrollView;
+@protocol UIScrollViewDelegate <NSObject>
+@optional
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView;
+@end
+
 @interface UIScrollView : UIView
 {
   id _scrollView;
