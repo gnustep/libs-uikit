@@ -6,15 +6,14 @@ PACKAGE_NAME = libs-uikit
 
 include $(GNUSTEP_MAKEFILES)/common.make
 
-LIBRARY_NAME = libs-uikit
-libs-uikit_VERSION = 0.2.0
-libs-uikit_INTERFACE_VERSION = 1
+FRAMEWORK_NAME = UIKit
+UIKit_VERSION = 0.2.0
+UIKit_INTERFACE_VERSION = 1
 
-libs-uikit_OBJC_FILES = $(shell cat Sources.list)
+UIKit_OBJC_FILES = $(shell cat Sources.list)
 
-libs-uikit_HEADER_FILES_DIR = ../Headers/UIKit
-libs-uikit_HEADER_FILES_INSTALL_DIR = /UIKit
-libs-uikit_HEADER_FILES = \
+UIKit_HEADER_FILES_DIR = ../Headers/UIKit
+UIKit_HEADER_FILES = \
 	UIKit.h \
 	NSLayoutConstraint.h \
 	NSLayoutAnchor.h \
@@ -71,8 +70,8 @@ libs-uikit_HEADER_FILES = \
 	UINib.h \
 	NSBundle+UIKit.h
 
-libs-uikit_LIBRARIES_DEPEND_UPON = -lgnustep-gui -lgnustep-base
+UIKit_LIBRARIES_DEPEND_UPON = -lgnustep-gui -lgnustep-base
 
 include GNUmakefile.preamble
-include $(GNUSTEP_MAKEFILES)/library.make
+include $(GNUSTEP_MAKEFILES)/framework.make
 include GNUmakefile.postamble

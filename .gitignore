@@ -4,3 +4,5 @@ obj
 *.d
 build/
 build-*/
+*.framework
+Source/derived_src/

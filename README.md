@@ -48,7 +48,9 @@ make
 
 The top-level build includes both subprojects:
 
-- `Source` builds the `libs-uikit` shared library.
+- `Source` builds `UIKit.framework`, containing `libUIKit.so` on Linux.
+  CMake builds the standalone `libUIKit.so` shared library.
+  Applications link with `-lUIKit`.
 - `Examples` builds `UIKitExample`, `UIKitCoreCatalog`, and `UIKitStudio`. The OpenGL example is
   opt-in with `UIKIT_BUILD_OPENGL_EXAMPLE=yes`.
 
