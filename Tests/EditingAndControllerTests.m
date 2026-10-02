@@ -111,5 +111,22 @@ void testUIKitEditingAndControllers(void)
   VERIFY(fabs(content.frame.origin.x-16)<0.001 && fabs(content.frame.origin.y-12)<0.001 && fabs(content.frame.size.width-144)<0.001 && fabs(content.frame.size.height-40)<0.001);
   controller.view.frame = CGRectMake(0,0,640,400); [controller.view layoutIfNeeded];
   VERIFY(fabs(content.frame.size.width-304)<0.001 && fabs(content.frame.size.height-40)<0.001); [controller release];
+  controller = [[UIViewController alloc] initWithNibName:@"StackLayout" bundle:bundle];
+  UIView *root = controller.view;
+  UIStackView *stack = (UIStackView *)[root viewWithTag:51];
+  VERIFY([stack isKindOfClass:[UIStackView class]] && stack.superview == root);
+  VERIFY(stack.axis == UILayoutConstraintAxisVertical && stack.spacing == 16);
+  VERIFY(stack.distribution == UIStackViewDistributionFill && stack.alignment == UIStackViewAlignmentFill);
+  VERIFY(stack.arrangedSubviews.count == 3 && [stack.arrangedSubviews isEqual:stack.subviews]);
+  VERIFY([[stack.arrangedSubviews objectAtIndex:0] isKindOfClass:[UILabel class]]);
+  VERIFY([[stack.arrangedSubviews objectAtIndex:1] isKindOfClass:[UITextField class]]);
+  UIButton *button = [stack.arrangedSubviews objectAtIndex:2];
+  VERIFY([button isKindOfClass:[UIButton class]]);
+  VERIFY(button.constraints.count == 1 && [[button.constraints objectAtIndex:0] firstItem] == button);
+  [root layoutIfNeeded];
+  VERIFY(fabs(stack.frame.origin.x-24)<0.001 && fabs(stack.frame.origin.y-32)<0.001 && fabs(stack.frame.size.width-345)<0.001);
+  root.frame = CGRectMake(0,0,600,852); [root layoutIfNeeded];
+  VERIFY(fabs(stack.frame.size.width-552)<0.001);
+  [controller release];
   fprintf(stderr, "UIKit editing, list-controller and XIB layout scenarios passed\n");
 }

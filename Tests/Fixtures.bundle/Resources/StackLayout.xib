@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0">
+  <objects>
+    <view id="root">
+      <rect key="frame" x="0" y="0" width="393" height="852"/>
+      <subviews>
+        <stackView id="stack" tag="51" axis="vertical" spacing="16" translatesAutoresizingMaskIntoConstraints="NO">
+          <rect key="frame" x="24" y="91" width="345" height="134"/>
+          <subviews>
+            <label id="label" text="Hello, UIKit!" translatesAutoresizingMaskIntoConstraints="NO">
+              <rect key="frame" x="0" y="0" width="345" height="24"/>
+            </label>
+            <textField id="field" placeholder="Enter your name" translatesAutoresizingMaskIntoConstraints="NO">
+              <rect key="frame" x="0" y="40" width="345" height="34"/>
+            </textField>
+            <button id="button" translatesAutoresizingMaskIntoConstraints="NO">
+              <rect key="frame" x="0" y="90" width="345" height="44"/>
+              <constraints><constraint firstAttribute="height" constant="44" id="button-height"/></constraints>
+              <state key="normal" title="Say Hello"/>
+            </button>
+          </subviews>
+        </stackView>
+      </subviews>
+      <viewLayoutGuide key="safeArea" id="safe"/>
+      <constraints>
+        <constraint firstItem="stack" firstAttribute="leading" secondItem="safe" secondAttribute="leading" constant="24" id="stack-leading"/>
+        <constraint firstItem="safe" firstAttribute="trailing" secondItem="stack" secondAttribute="trailing" constant="24" id="stack-trailing"/>
+        <constraint firstItem="stack" firstAttribute="top" secondItem="safe" secondAttribute="top" constant="32" id="stack-top"/>
+      </constraints>
+    </view>
+  </objects>
+</document>

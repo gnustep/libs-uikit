@@ -55,6 +55,8 @@
 
   if ([element isEqualToString:@"view"])
     return @"UIView";
+  if ([element isEqualToString:@"stackView"])
+    return @"UIStackView";
   if ([element isEqualToString:@"label"])
     return @"UILabel";
   if ([element isEqualToString:@"button"])
@@ -165,6 +167,26 @@
       NSString *maximumValue = [attributes objectForKey:@"maxValue"];
       NSString *on = [attributes objectForKey:@"on"];
 
+      if ([object isKindOfClass:[UIStackView class]])
+        {
+          UIStackView *stack = object;
+          NSString *axis = [attributes objectForKey:@"axis"];
+          NSString *spacing = [attributes objectForKey:@"spacing"];
+          NSString *distribution = [attributes objectForKey:@"distribution"];
+          NSString *alignment = [attributes objectForKey:@"alignment"];
+          NSArray *distributions = [NSArray arrayWithObjects:@"fill", @"fillEqually", @"fillProportionally", @"equalSpacing", @"equalCentering", nil];
+          NSArray *alignments = [NSArray arrayWithObjects:@"fill", @"leading", @"firstBaseline", @"center", @"trailing", @"lastBaseline", nil];
+          if (axis != nil)
+            stack.axis = [axis isEqualToString:@"vertical"] ? UILayoutConstraintAxisVertical : UILayoutConstraintAxisHorizontal;
+          if (spacing != nil) stack.spacing = [spacing doubleValue];
+          if (distribution != nil && [distributions containsObject:distribution])
+            stack.distribution = [distributions indexOfObject:distribution];
+          if ([alignment isEqualToString:@"top"]) alignment = @"leading";
+          if ([alignment isEqualToString:@"bottom"]) alignment = @"trailing";
+          if (alignment != nil && [alignments containsObject:alignment])
+            stack.alignment = [alignments indexOfObject:alignment];
+        }
+
       if ([object isKindOfClass:[UIView class]] && [attributes objectForKey:@"translatesAutoresizingMaskIntoConstraints"])
         [object setTranslatesAutoresizingMaskIntoConstraints:[[attributes objectForKey:@"translatesAutoresizingMaskIntoConstraints"] boolValue]];
       if (objectID != nil)
@@ -209,7 +231,11 @@
     id first = firstID ? [_objectsByID objectForKey:firstID] : [spec objectForKey:@"owner"];
     id second = secondID ? [_objectsByID objectForKey:secondID] : nil;
     if (!first || (secondID && !second))
-      [NSException raise:NSInvalidArgumentException format:@"XIB constraint references an unknown item"];
+      [NSException raise:NSInvalidArgumentException
+                  format:@"XIB constraint %@ references an unknown item: %@=%@",
+                         [attributes objectForKey:@"id"],
+                         !first ? @"firstItem" : @"secondItem",
+                         !first ? firstID : secondID];
     NSString *relationName = [attributes objectForKey:@"relation"];
     NSLayoutRelation relation = NSLayoutRelationEqual;
     if ([relationName isEqual:@"lessThanOrEqual"]) relation = NSLayoutRelationLessThanOrEqual;
@@ -322,7 +348,9 @@
       id object = [self _objectForElement:elementName attributes:attributeDict];
       if (object != nil)
         {
-          if ([parent isKindOfClass:[UIView class]] && [object isKindOfClass:[UIView class]])
+          if ([parent isKindOfClass:[UIStackView class]] && [object isKindOfClass:[UIView class]])
+            [(UIStackView *)parent addArrangedSubview:object];
+          else if ([parent isKindOfClass:[UIView class]] && [object isKindOfClass:[UIView class]])
             [(UIView *)parent addSubview:object];
           else if ([parent isKindOfClass:[UIViewController class]] && [object isKindOfClass:[UIView class]])
             [(UIViewController *)parent setView:object];
