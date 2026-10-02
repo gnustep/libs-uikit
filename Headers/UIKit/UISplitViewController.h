@@ -1,0 +1,20 @@
+#ifndef GNUSTEP_UIKIT_UISPLITVIEWCONTROLLER_H
+#define GNUSTEP_UIKIT_UISPLITVIEWCONTROLLER_H
+#import <UIKit/UIViewController.h>
+@class UIBarButtonItem;
+typedef NSInteger UISplitViewControllerStyle;
+enum { UISplitViewControllerStyleUnspecified, UISplitViewControllerStyleDoubleColumn, UISplitViewControllerStyleTripleColumn };
+typedef NSInteger UISplitViewControllerColumn;
+enum { UISplitViewControllerColumnPrimary, UISplitViewControllerColumnSupplementary, UISplitViewControllerColumnSecondary, UISplitViewControllerColumnCompact };
+typedef NSInteger UISplitViewControllerDisplayMode;
+enum { UISplitViewControllerDisplayModeAutomatic, UISplitViewControllerDisplayModeSecondaryOnly, UISplitViewControllerDisplayModeOneBesideSecondary, UISplitViewControllerDisplayModeOneOverSecondary, UISplitViewControllerDisplayModeTwoBesideSecondary, UISplitViewControllerDisplayModeTwoOverSecondary, UISplitViewControllerDisplayModeTwoDisplaceSecondary };
+@interface UISplitViewController : UIViewController
+{ NSMutableDictionary *_columns; UISplitViewControllerStyle _style; UISplitViewControllerDisplayMode _preferredDisplayMode; UIBarButtonItem *_displayModeButtonItem; }
+- (id)initWithStyle:(UISplitViewControllerStyle)style;
+@property(nonatomic, readonly) UISplitViewControllerStyle style;
+@property(nonatomic) UISplitViewControllerDisplayMode preferredDisplayMode;
+@property(nonatomic, readonly) UIBarButtonItem *displayModeButtonItem;
+- (void)setViewController:(UIViewController *)controller forColumn:(UISplitViewControllerColumn)column;
+- (UIViewController *)viewControllerForColumn:(UISplitViewControllerColumn)column;
+@end
+#endif

@@ -526,6 +526,21 @@ static void UILayoutCollect(UIView *view, NSMutableArray *items, NSMutableArray 
   NSMutableArray *accepted = [NSMutableArray array];
   double *solution = calloc(variables, sizeof(double)), *candidate = calloc(variables, sizeof(double));
   if (!solution || !candidate) { free(solution); free(candidate); return; }
+  /* Start with the current geometry. Layout and native drawing can request
+     another pass after cells or decoration are added. Re-solving from zero
+     needlessly rebuilds the simplex tableau for already-satisfied constraints. */
+  for (NSUInteger i = 0; i < items.count; i++) {
+    id item = [items objectAtIndex:i]; BOOL guide = [item isKindOfClass:[UILayoutGuide class]];
+    UIView *parent = guide ? [(UILayoutGuide *)item owningView] : [(UIView *)item superview];
+    CGRect frame = guide ? [item layoutFrame] : item == self ? [self bounds] : [item frame];
+    solution[i*4] = frame.origin.x; solution[i*4+1] = frame.origin.y;
+    solution[i*4+2] = frame.size.width; solution[i*4+3] = frame.size.height;
+    if (parent) {
+      NSUInteger p = [[indices objectForKey:[NSValue valueWithPointer:parent]] unsignedIntegerValue];
+      solution[i*4] += solution[p*4]-parent.bounds.origin.x;
+      solution[i*4+1] += solution[p*4+1]-parent.bounds.origin.y;
+    }
+  }
   for (_UILayoutEquation *e in equations) {
     NSUInteger previous = [accepted count];
     if (e->relation <= 0) [accepted addObject:e->coefficients];

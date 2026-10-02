@@ -2,7 +2,23 @@
 #import <UIKit/UIView.h>
 #import <UIKit/UIViewController.h>
 
+@implementation UIPopoverPresentationController
+@synthesize sourceView = _sourceView, sourceRect = _sourceRect;
+- (void)dealloc { [_sourceView release]; [super dealloc]; }
+@end
+
 @implementation UIViewController
+@synthesize tabBarItem = _tabBarItem, definesPresentationContext = _definesPresentationContext, modalPresentationStyle = _modalPresentationStyle;
+- (UINavigationItem *)navigationItem
+{
+  if (!_navigationItem) _navigationItem = [[UINavigationItem alloc] initWithTitle:_title];
+  return _navigationItem;
+}
+- (UIPopoverPresentationController *)popoverPresentationController
+{
+  if (!_popoverPresentationController) _popoverPresentationController = [UIPopoverPresentationController new];
+  return _popoverPresentationController;
+}
 - (id)init { return [self initWithNibName:nil bundle:nil]; }
 - (id)initWithNibName:(NSString *)name bundle:(NSBundle *)bundle
 {
@@ -18,6 +34,7 @@
   if (_presentedViewController) _presentedViewController->_presentingViewController = nil;
   [_presentationWindow close]; [_presentationWindow release]; [_presentedViewController release];
   for (UIViewController *child in _childViewControllers) child->_parentViewController = nil;
+  [_navigationItem release]; [_tabBarItem release]; [_popoverPresentationController release];
   [_view _setOwningViewController:nil];
   [_childViewControllers release]; [_view release]; [_title release];
   [_nibName release]; [_nibBundle release]; [_nibTopLevelObjects release];
@@ -131,5 +148,5 @@
 - (UIWindow *)_responderWindow { return [_view window]; }
 - (NSResponder *)_nativeResponder { return [[self view] _nativeView]; }
 - (NSString *)title { return _title; }
-- (void)setTitle:(NSString *)title { ASSIGNCOPY(_title, title); }
+- (void)setTitle:(NSString *)title { ASSIGNCOPY(_title, title); [_navigationItem setTitle:title]; }
 @end

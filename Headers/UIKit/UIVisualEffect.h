@@ -1,0 +1,4 @@
+#ifndef GNUSTEP_UIKIT_UIVISUALEFFECT_H
+#define GNUSTEP_UIKIT_UIVISUALEFFECT_H
+#import <UIKit/UIVisualEffectView.h>
+#endif

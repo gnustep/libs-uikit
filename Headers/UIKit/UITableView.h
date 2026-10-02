@@ -4,12 +4,15 @@
 #import <UIKit/UIScrollView.h>
 #import <UIKit/UITableViewCell.h>
 
-@class UITableView;
+@class UITableView, UIRefreshControl;
+extern const CGFloat UITableViewAutomaticDimension;
 
 @protocol UITableViewDataSource
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section;
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;
 @optional
+- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section;
+- (NSString *)tableView:(UITableView *)tableView titleForFooterInSection:(NSInteger)section;
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath;
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView;
 @end
@@ -31,7 +34,12 @@
   NSMutableDictionary *_registeredCellClasses;
   NSArray *_sectionRows;
   BOOL _reloading;
-  UIView *_tableFooterView;
+  UIView *_tableFooterView, *_backgroundView;
+  UIRefreshControl *_refreshControl;
+  CGFloat _estimatedRowHeight, _geometryWidth, _pullDistance;
+  NSMutableDictionary *_rowRects;
+  NSMutableArray *_sectionViews, *_rowPaths;
+  BOOL _dataDirty;
 }
 - (id)initWithFrame:(CGRect)frame style:(UITableViewStyle)style;
 - (id)dataSource;
@@ -50,6 +58,9 @@
 - (NSIndexPath *)indexPathForCell:(UITableViewCell *)cell;
 - (CGRect)rectForRowAtIndexPath:(NSIndexPath *)indexPath;
 @property(nonatomic, retain) UIView *tableFooterView;
+@property(nonatomic, retain) UIView *backgroundView;
+@property(nonatomic, retain) UIRefreshControl *refreshControl;
+@property(nonatomic) CGFloat estimatedRowHeight;
 - (void)deleteRowsAtIndexPaths:(NSArray *)paths withRowAnimation:(UITableViewRowAnimation)animation;
 - (void)scrollToRowAtIndexPath:(NSIndexPath *)path atScrollPosition:(UITableViewScrollPosition)position animated:(BOOL)animated;
 - (void)reloadData;

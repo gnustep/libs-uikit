@@ -1,7 +1,14 @@
 #import "UIKitPrivate.h"
 #import <UIKit/UIButton.h>
 
+@interface _UIKitButtonTitleLabel : UILabel { @public NSButton *button; }
+@end
+@implementation _UIKitButtonTitleLabel
+- (void)setFont:(UIFont *)font { [super setFont:font]; [button setFont:[font NSFont]]; }
+- (void)setNumberOfLines:(NSInteger)lines { [super setNumberOfLines:lines]; [[button cell] setWraps:lines != 1]; }
+@end
 @implementation UIButton
+- (UILabel *)titleLabel { return _titleLabel; }
 + (UIButton *)buttonWithType:(int)buttonType
 {
   UIButton *button = [[[self alloc] initWithFrame:NSMakeRect(0, 0, 80, 24)] autorelease];
@@ -20,11 +27,15 @@
       [_button setTarget:self];
       [_button setAction:@selector(_uiButtonPressed:)];
       [self _addNativeSubview:_button];
+      _titleLabel = [[_UIKitButtonTitleLabel alloc] initWithFrame:self.bounds];
+      ((_UIKitButtonTitleLabel *)_titleLabel)->button = _button;
     }
   return self;
 }
 - (void)dealloc
 {
+  ((_UIKitButtonTitleLabel *)_titleLabel)->button = nil;
+  [_titleLabel release];
   [_titles release];
   [_button release];
   [super dealloc];
@@ -43,6 +54,7 @@
   UIControlState state = (_enabled ? 0 : UIControlStateDisabled) | (_selected ? UIControlStateSelected : 0) | (_highlighted ? UIControlStateHighlighted : 0);
   NSString *title = [_titles objectForKey:[NSNumber numberWithUnsignedInt:state]];
   if (!title) title = [_titles objectForKey:[NSNumber numberWithUnsignedInt:UIControlStateNormal]];
+  _titleLabel.text = title ?: @"";
   [_button setTitle:title ?: @""]; [self invalidateIntrinsicContentSize];
 }
 - (void)setTitle:(NSString *)title forState:(UIControlState)state
@@ -52,8 +64,8 @@
   [self _updateTitle];
 }
 - (NSString *)titleForState:(UIControlState)state { return [_titles objectForKey:[NSNumber numberWithUnsignedInt:state]]; }
-- (void)setSelected:(BOOL)selected { [super setSelected:selected]; [self _updateTitle]; }
-- (void)setHighlighted:(BOOL)highlighted { [super setHighlighted:highlighted]; [self _updateTitle]; }
+- (void)setSelected:(BOOL)selected { if (_selected == selected) return; [super setSelected:selected]; [self _updateTitle]; }
+- (void)setHighlighted:(BOOL)highlighted { if (_highlighted == highlighted) return; [super setHighlighted:highlighted]; [self _updateTitle]; }
 - (void)setEnabled:(BOOL)enabled
 {
   [super setEnabled:enabled];

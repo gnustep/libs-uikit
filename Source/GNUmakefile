@@ -68,6 +68,35 @@ UIKit_HEADER_FILES = \
 	UITabBarController.h \
 	UIActivityIndicatorView.h \
 	UIAlertView.h \
+	UISearchBar.h \
+	UISearchController.h \
+	UIBarButtonItem.h \
+	UIToolbar.h \
+	UINavigationBar.h \
+	UITabBarItem.h \
+	UITabBar.h \
+	UIPopoverPresentationController.h \
+	UIDatePicker.h \
+	UIPickerView.h \
+	UIPageControl.h \
+	UICalendarView.h \
+	UIRefreshControl.h \
+	UIViewLayer.h \
+	UIVisualEffectView.h \
+	UIPageViewController.h \
+	UISplitViewController.h \
+	UIActivityViewController.h \
+	UIColorPickerViewController.h \
+	UIFontDescriptor.h \
+	UIFontPickerViewController.h \
+	UILongPressGestureRecognizer.h \
+	UISwipeGestureRecognizer.h \
+	UIPinchGestureRecognizer.h \
+	UIRotationGestureRecognizer.h \
+	UIBlurEffect.h \
+	UIVisualEffect.h \
+	UICalendarSelectionSingleDate.h \
+	UIFontPickerViewControllerConfiguration.h \
 	UIScreen.h \
 	UIDevice.h \
 	UINib.h \

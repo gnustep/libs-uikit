@@ -9,6 +9,7 @@
 - (void)scrollWheel:(NSEvent *)event
 {
   if (owner.keyboardDismissMode != UIScrollViewKeyboardDismissModeNone) [[owner window] endEditing:YES];
+  if ([owner respondsToSelector:@selector(_handleScrollWheel:)]) [owner performSelector:@selector(_handleScrollWheel:) withObject:event];
   [super scrollWheel:event];
 }
 - (void)tile

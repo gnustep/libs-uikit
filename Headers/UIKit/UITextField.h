@@ -4,6 +4,8 @@
 #import <UIKit/UIControl.h>
 
 @class UIColor, UIFont, UITextField;
+typedef NSInteger UITextBorderStyle;
+enum { UITextBorderStyleNone, UITextBorderStyleLine, UITextBorderStyleBezel, UITextBorderStyleRoundedRect };
 extern NSString *UITextFieldTextDidBeginEditingNotification;
 extern NSString *UITextFieldTextDidChangeNotification;
 extern NSString *UITextFieldTextDidEndEditingNotification;
@@ -20,12 +22,14 @@ extern NSString *UITextFieldTextDidEndEditingNotification;
 @interface UITextField : UIControl
 {
   id _textField;
+  UITextBorderStyle _borderStyle;
   id<UITextFieldDelegate> _delegate;
   BOOL _editing;
   NSString *_placeholder;
   BOOL _secureTextEntry;
   NSTextAlignment _textAlignment;
 }
+@property(nonatomic) UITextBorderStyle borderStyle;
 @property(nonatomic, assign) id<UITextFieldDelegate> delegate;
 @property(nonatomic, readonly, getter=isEditing) BOOL editing;
 - (NSString *)text;

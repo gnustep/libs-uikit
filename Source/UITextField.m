@@ -22,6 +22,12 @@ UIKIT_FIELD_EDITS
 @end
 
 @implementation UITextField
+- (UITextBorderStyle)borderStyle { return _borderStyle; }
+- (void)setBorderStyle:(UITextBorderStyle)style {
+  _borderStyle = style; [_textField setBordered:style != UITextBorderStyleNone];
+  [_textField setBezeled:style == UITextBorderStyleBezel || style == UITextBorderStyleRoundedRect];
+  [(NSTextFieldCell *)[_textField cell] setBezelStyle:style == UITextBorderStyleRoundedRect ? NSTextFieldRoundedBezel : NSTextFieldSquareBezel];
+}
 - (id)initWithFrame:(CGRect)frame
 {
   self = [super initWithFrame:frame];
@@ -34,6 +40,7 @@ UIKIT_FIELD_EDITS
       [_textField setAction:@selector(_uiTextFieldAction:)];
       [self _addNativeSubview:_textField];
       _textAlignment = NSTextAlignmentLeft;
+      self.borderStyle = UITextBorderStyleNone;
     }
   return self;
 }
@@ -115,6 +122,7 @@ UIKIT_FIELD_EDITS
   if (editing) [[self window] _makeFirstResponder:nil];
   [_textField setDelegate:nil]; [_textField removeFromSuperview]; [_textField release];
   _textField = replacement; _secureTextEntry = secureTextEntry;
+  self.borderStyle = _borderStyle;
   [self _addNativeSubview:_textField];
   if (editing) [self becomeFirstResponder];
 }

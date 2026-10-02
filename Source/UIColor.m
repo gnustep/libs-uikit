@@ -1,6 +1,13 @@
 #import "UIKitPrivate.h"
 
 @implementation UIColor
++ (UIColor *)systemTealColor { return [self _colorWithNSColor:[NSColor colorWithCalibratedRed:0 green:0.5 blue:0.5 alpha:1]]; }
++ (UIColor *)systemBlueColor { return [self _colorWithNSColor:[NSColor blueColor]]; }
++ (UIColor *)systemGrayColor { return [self _colorWithNSColor:[NSColor grayColor]]; }
++ (UIColor *)tertiarySystemFillColor { return [self _colorWithNSColor:[NSColor colorWithCalibratedWhite:0.85 alpha:1]]; }
++ (UIColor *)secondarySystemGroupedBackgroundColor { return [self _colorWithNSColor:[NSColor controlBackgroundColor]]; }
++ (UIColor *)systemGroupedBackgroundColor { return [self _colorWithNSColor:[NSColor windowBackgroundColor]]; }
++ (UIColor *)secondaryLabelColor { return [self _colorWithNSColor:[NSColor disabledControlTextColor]]; }
 + (UIColor *)systemBackgroundColor { return [self _colorWithNSColor:[NSColor windowBackgroundColor]]; }
 + (UIColor *)_colorWithNSColor:(NSColor *)color
 {

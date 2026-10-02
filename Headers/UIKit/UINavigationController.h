@@ -3,12 +3,14 @@
 
 #import <UIKit/UIViewController.h>
 
+@class UINavigationBar;
 @interface UINavigationController : UIViewController
 {
   NSMutableArray *_viewControllers;
   UIView *_contentHost;
   id _backButton;
   id _titleLabel;
+  UINavigationBar *_navigationBar;
 }
 - (id)initWithRootViewController:(UIViewController *)rootViewController;
 - (NSArray *)viewControllers;

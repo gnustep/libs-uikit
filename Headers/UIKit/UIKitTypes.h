@@ -91,6 +91,9 @@ enum { UITableViewRowAnimationFade, UITableViewRowAnimationRight, UITableViewRow
 typedef NSInteger UIScrollViewKeyboardDismissMode;
 enum { UIScrollViewKeyboardDismissModeNone, UIScrollViewKeyboardDismissModeOnDrag, UIScrollViewKeyboardDismissModeInteractive };
 
+typedef NSInteger UITableViewCellStyle;
+enum { UITableViewCellStyleDefault, UITableViewCellStyleValue1, UITableViewCellStyleValue2, UITableViewCellStyleSubtitle };
+
 typedef NSInteger UITableViewCellSelectionStyle;
 enum {
   UITableViewCellSelectionStyleNone = 0,
@@ -118,6 +121,7 @@ enum {
   UIReturnKeyDone = 9
 };
 
+enum { UIActivityIndicatorViewStyleMedium = 100, UIActivityIndicatorViewStyleLarge = 101 };
 typedef NSInteger UIActivityIndicatorViewStyle;
 enum {
   UIActivityIndicatorViewStyleWhiteLarge = 0,
@@ -169,7 +173,7 @@ enum {
 typedef NSInteger UIButtonType;
 enum { UIButtonTypeCustom = 0, UIButtonTypeSystem = 1, UIButtonTypeRoundedRect = 1 };
 typedef NSInteger UITableViewStyle;
-enum { UITableViewStylePlain = 0, UITableViewStyleGrouped = 1 };
+enum { UITableViewStylePlain = 0, UITableViewStyleGrouped = 1, UITableViewStyleInsetGrouped = 2 };
 typedef NSInteger UITableViewScrollPosition;
 enum { UITableViewScrollPositionNone = 0, UITableViewScrollPositionTop = 1,
        UITableViewScrollPositionMiddle = 2, UITableViewScrollPositionBottom = 3 };

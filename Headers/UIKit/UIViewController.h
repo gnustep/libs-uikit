@@ -3,7 +3,9 @@
 
 #import <UIKit/UIResponder.h>
 
-@class UIView, UIWindow, UINavigationController;
+@class UIView, UIWindow, UINavigationController, UINavigationItem, UITabBarItem, UIPopoverPresentationController;
+typedef NSInteger UIModalPresentationStyle;
+enum { UIModalPresentationFullScreen = 0, UIModalPresentationPageSheet = 1, UIModalPresentationFormSheet = 2, UIModalPresentationPopover = 7, UIModalPresentationAutomatic = -2 };
 DEFINE_BLOCK_TYPE_NO_ARGS(UIViewControllerCompletion, void);
 
 @interface UIViewController : UIResponder
@@ -11,6 +13,11 @@ DEFINE_BLOCK_TYPE_NO_ARGS(UIViewControllerCompletion, void);
   UIViewController *_presentedViewController, *_presentingViewController;
   UIWindow *_presentationWindow;
   UIView *_view;
+  UINavigationItem *_navigationItem;
+  UITabBarItem *_tabBarItem;
+  UIPopoverPresentationController *_popoverPresentationController;
+  BOOL _definesPresentationContext;
+  UIModalPresentationStyle _modalPresentationStyle;
   NSString *_title;
   NSArray *_nibTopLevelObjects;
   NSString *_nibName;
@@ -22,6 +29,11 @@ DEFINE_BLOCK_TYPE_NO_ARGS(UIViewControllerCompletion, void);
   BOOL _appearanceAnimated;
   BOOL _visible;
 }
+@property(nonatomic, readonly) UINavigationItem *navigationItem;
+@property(nonatomic, retain) UITabBarItem *tabBarItem;
+@property(nonatomic, readonly) UIPopoverPresentationController *popoverPresentationController;
+@property(nonatomic) BOOL definesPresentationContext;
+@property(nonatomic) UIModalPresentationStyle modalPresentationStyle;
 @property(nonatomic, readonly) UINavigationController *navigationController;
 @property(nonatomic, readonly) UIViewController *presentedViewController;
 @property(nonatomic, readonly) UIViewController *presentingViewController;

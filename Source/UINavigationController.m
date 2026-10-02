@@ -12,7 +12,7 @@
   }
   return self;
 }
-- (void)dealloc { [_viewControllers release]; [_contentHost release]; [super dealloc]; }
+- (void)dealloc { [[NSNotificationCenter defaultCenter] removeObserver:self]; [_navigationBar release]; [_viewControllers release]; [_contentHost release]; [super dealloc]; }
 - (NSArray *)viewControllers { return [[_viewControllers copy] autorelease]; }
 - (UIViewController *)topViewController { return [_viewControllers lastObject]; }
 - (NSArray *)_appearanceChildren { return [self topViewController] ? [NSArray arrayWithObject:[self topViewController]] : [NSArray array]; }
@@ -20,18 +20,36 @@
 {
   [super loadView];
   CGRect bounds = [_view bounds];
-  _backButton = [UIButton buttonWithType:0];
-  [_backButton setFrame:CGRectMake(4, 4, 70, 36)];
-  [_backButton setTitle:@"Back" forState:UIControlStateNormal];
-  [_backButton addTarget:self action:@selector(_goBack:) forControlEvents:UIControlEventTouchUpInside];
-  [_view addSubview:_backButton];
-  _titleLabel = [[[UILabel alloc] initWithFrame:CGRectMake(80, 4, bounds.size.width - 84, 36)] autorelease];
-  [_titleLabel setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
-  [_view addSubview:_titleLabel];
+  _navigationBar = [[UINavigationBar alloc] initWithFrame:CGRectMake(0,0,bounds.size.width,44)];
+  _navigationBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+  [_view addSubview:_navigationBar];
+  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_navigationItemChanged:) name:@"UIKitNavigationItemChanged" object:nil];
   _contentHost = [[UIView alloc] initWithFrame:CGRectMake(0, 44, bounds.size.width, MAX(0, bounds.size.height - 44))];
   [_contentHost setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
   [_view addSubview:_contentHost];
   [self _installTopView];
+}
+- (void)_navigationItemChanged:(NSNotification *)notification
+{
+  if ([notification object] == self.topViewController.navigationItem) [self _updateNavigationBar];
+}
+- (void)_updateNavigationBar
+{
+  UIViewController *top = self.topViewController;
+  UINavigationItem *item = top.navigationItem;
+  CGFloat height = item.searchController ? 84 : 44;
+  CGRect bounds = _view.bounds;
+  _navigationBar.frame = CGRectMake(0,0,bounds.size.width,height);
+  _navigationBar.items = item ? [NSArray arrayWithObject:item] : nil;
+  _contentHost.frame = CGRectMake(0,height,bounds.size.width,MAX(0,bounds.size.height-height));
+  if (_backButton) { [_backButton removeFromSuperview]; _backButton = nil; }
+  if (_viewControllers.count > 1 && !item.leftBarButtonItem) {
+    _backButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    [_backButton setTitle:@"Back" forState:UIControlStateNormal];
+    [_backButton setFrame:CGRectMake(4,4,70,36)];
+    [_backButton addTarget:self action:@selector(_goBack:) forControlEvents:UIControlEventTouchUpInside];
+    [_view addSubview:_backButton];
+  }
 }
 - (void)_goBack:(id)sender { [self popViewControllerAnimated:NO]; }
 - (void)_installTopView
@@ -44,8 +62,7 @@
     [view setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
     [_contentHost addSubview:view];
   }
-  [_titleLabel setText:[top title]];
-  [_backButton setHidden:[_viewControllers count] <= 1];
+  [self _updateNavigationBar];
 }
 - (void)pushViewController:(UIViewController *)controller animated:(BOOL)animated
 {

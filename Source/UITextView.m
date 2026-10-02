@@ -5,6 +5,7 @@ NSString *UITextViewTextDidChangeNotification = @"UITextViewTextDidChangeNotific
 NSString *UITextViewTextDidEndEditingNotification = @"UITextViewTextDidEndEditingNotification";
 
 @implementation UITextView
+@synthesize adjustsFontForContentSizeCategory = _adjustsFontForContentSizeCategory;
 - (id)initWithFrame:(CGRect)frame
 {
   self = [super initWithFrame:frame];

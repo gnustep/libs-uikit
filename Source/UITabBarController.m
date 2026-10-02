@@ -19,7 +19,7 @@
   if (!_contentHost) return;
   [_tabControl removeFromSuperview];
   NSMutableArray *titles = [NSMutableArray array];
-  for (UIViewController *controller in _viewControllers) [titles addObject:[controller title] ?: @"Untitled"];
+  for (UIViewController *controller in _viewControllers) [titles addObject:controller.tabBarItem.title ?: [controller title] ?: @"Untitled"];
   _tabControl = [[[UISegmentedControl alloc] initWithItems:titles] autorelease];
   CGRect b = [_view bounds];
   [_tabControl setFrame:CGRectMake(0, MAX(0, b.size.height - 40), b.size.width, 40)];

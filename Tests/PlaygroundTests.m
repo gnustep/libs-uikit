@@ -41,6 +41,8 @@ void testUIKitPlayground(void)
   UIScrollView *scroll = [owner->outlets objectForKey:@"scrollView"];
   UIStackView *stack = [owner->outlets objectForKey:@"contentStack"];
   UITableView *table = [owner->outlets objectForKey:@"historyTableView"];
+  /* Register before the first layout, which loads standalone table data. */
+  [table registerClass:[UITableViewCell class] forCellReuseIdentifier:@"row"];
   CHECK([stepper isKindOfClass:[UIStepper class]] && [progress isKindOfClass:[UIProgressView class]]);
   CHECK(stepper.minimumValue == 16 && stepper.maximumValue == 32 && stepper.value == 20 && stepper.stepValue == 2);
   CHECK(toggle.on && progress.progress == 0.25 && slider.value == 0.25);
@@ -76,7 +78,6 @@ void testUIKitPlayground(void)
   CHECK(stack.frame.size.height < previousHeight);
   progress.hidden = NO; [root layoutIfNeeded];
   CHECK(fabs(stack.frame.size.height-previousHeight) < 0.001);
-  [table registerClass:[UITableViewCell class] forCellReuseIdentifier:@"row"];
   [table reloadData];
   NSIndexPath *last = [NSIndexPath indexPathForRow:11 inSection:0];
   [table scrollToRowAtIndexPath:last atScrollPosition:UITableViewScrollPositionBottom animated:NO];

@@ -20,12 +20,14 @@ extern NSString *UITextViewTextDidEndEditingNotification;
 
 @interface UITextView : UIScrollView
 {
+  BOOL _adjustsFontForContentSizeCategory;
   id _textView;
   UIFont *_font;
   UIColor *_textColor;
   BOOL _uiSettingText;
   NSTextAlignment _textAlignment;
 }
+@property(nonatomic) BOOL adjustsFontForContentSizeCategory;
 @property(nonatomic, assign) id<UITextViewDelegate> delegate;
 @property(nonatomic, getter=isEditable) BOOL editable;
 @property(nonatomic, getter=isSelectable) BOOL selectable;

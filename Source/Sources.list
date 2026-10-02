@@ -41,6 +41,14 @@ UINavigationController.m
 UITabBarController.m
 UIActivityIndicatorView.m
 UIAlertView.m
+UISearch.m
+UIBars.m
+UIPickers.m
+UIRefreshControl.m
+UIVisualEffectView.m
+UIContainerControllers.m
+UIPresentationControllers.m
+UIAdditionalGestures.m
 UIScreen.m
 UIDevice.m
 UINib.m

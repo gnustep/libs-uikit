@@ -8,6 +8,13 @@
   id _color;
 }
 + (UIColor *)systemBackgroundColor;
++ (UIColor *)secondaryLabelColor;
++ (UIColor *)systemGroupedBackgroundColor;
++ (UIColor *)secondarySystemGroupedBackgroundColor;
++ (UIColor *)tertiarySystemFillColor;
++ (UIColor *)systemGrayColor;
++ (UIColor *)systemBlueColor;
++ (UIColor *)systemTealColor;
 + (UIColor *)blackColor;
 + (UIColor *)whiteColor;
 + (UIColor *)clearColor;

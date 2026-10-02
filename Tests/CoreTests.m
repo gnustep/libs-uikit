@@ -289,6 +289,7 @@ static void testLists(void)
 extern void testUIKitLayout(void);
 extern void testUIKitEditingAndControllers(void);
 extern void testUIKitPlayground(void);
+extern void testUIKitCatalog(void);
 
 int main(void)
 {
@@ -299,6 +300,7 @@ int main(void)
     testUIKitLayout();
     testUIKitEditingAndControllers();
     testUIKitPlayground();
+    testUIKitCatalog();
     fprintf(stderr, "Views\n"); testViews(); fprintf(stderr, "Controls\n"); testControls();
     fprintf(stderr, "Controllers\n"); testControllers(); fprintf(stderr, "Lists\n"); testLists();
     fprintf(stderr, "Input\n"); testInput(); fprintf(stderr, "Resources and scenes\n"); testResourcesAndScenes();

@@ -99,3 +99,56 @@ scrolling, without interactive software-keyboard tracking. Preferred Title 1 use
 are stored, without Dynamic Type notifications or native accessibility bridging.
 Progress styles share the native progress-bar appearance. Other stack distributions
 and baseline alignment retain the existing limited layout behavior.
+
+
+## Expanded widget catalog
+
+The catalog additions include navigation items and bar buttons, toolbars and tab
+bars, search fields with result-update callbacks, date/calendar pickers, multi-column
+pickers, page controls, and refreshing state. Subtitle table cells support text,
+images, section titles and width-dependent automatic row sizing. Tables and
+collections load their data at layout time; register reusable cells before the
+first layout. Automatic table sizing currently measures every row on reload;
+fixed-height lists retain cell virtualization and binary-search visible rows.
+
+Page controllers support programmatic single-page replacement. Split controllers
+lay out their child controllers in columns. Color and font pickers use native
+controls, and activity presentation offers text copying to the desktop clipboard.
+The additional long-press and swipe recognizers process pointer input. Pinch and
+rotation recognizers process two-touch sets, but the desktop mouse backend does
+not generate multitouch input.
+
+`Tests/CatalogTests.m` checks navigation drawing and actions, search callbacks,
+width-dependent subtitle sizing, native picker actions, calendar selection,
+spinner state and controller containment. A separate integration smoke run loaded
+all 49 live views in UIKitTest's expanded catalog and opened its controller demos;
+that is a loading/presentation check, not certification of every interaction.
+
+Known limits of this subset:
+
+- `UIView.layer` is a **UIViewLayer AppKit drawing bridge**, not `CALayer` or a Core
+  Animation implementation. It rounds the background; rounded clipping of native
+  subviews and animations remain unsupported. `masksToBounds` uses rectangular
+  clipping.
+- Visual effects use translucent light/dark fills. GNUstep's native visual-effect
+  view does not render backdrop blur. System images currently provide drawn
+  fallback glyphs for `hand.tap`, `doc.text` and `photo.artframe`; other names return
+  nil. These are not SF Symbols assets.
+- Preferred text styles use fixed desktop font sizes. Dynamic Type and native
+  accessibility bridging remain unimplemented; the associated properties store
+  metadata. Button labels forward font and wrapping settings to native buttons.
+- Table grouped styles share the plain geometry; Value1/Value2 cells currently use
+  subtitle geometry. Pickers use popup menus or native date fields/calendar views
+  instead of wheel presentations. Countdown mode is explicitly unsupported.
+- Search updating in the existing controller works; separate search-results
+  presentation and background obscuring are not implemented. Navigation search
+  bars stay visible. Toolbars divide available space equally among their items.
+- Presentations use desktop windows. Modal style, presentation context and popover
+  source properties are stored but do not implement iOS transition/placement
+  behavior. Page transitions are immediate; interactive page swiping and page curl
+  are not implemented. Split columns use equal widths and do not implement adaptive
+  iOS display modes. Activity controllers support text copy, not the full share
+  sheet or custom activities.
+- Refreshing is triggered by upward wheel input at the top of a table; it does not
+  implement elastic touch scrolling. Programmatic `beginRefreshing` does not emit
+  a value-change action.

@@ -2,12 +2,16 @@
 #import <UIKit/UIKit.h>
 #include <math.h>
 
+const CGFloat UITableViewAutomaticDimension = -1;
+
 @implementation UITableView
+@synthesize estimatedRowHeight = _estimatedRowHeight;
 - (id)initWithFrame:(CGRect)frame style:(UITableViewStyle)style { return [self initWithFrame:frame]; }
 - (id)initWithFrame:(CGRect)frame
 {
   self = [super initWithFrame:frame];
   if (self) {
+    _rowRects = [NSMutableDictionary new]; _sectionViews = [NSMutableArray new]; _rowPaths = [NSMutableArray new]; _estimatedRowHeight = 44;
     _visibleCells = [[NSMutableArray alloc] init];
     _reusableCells = [[NSMutableDictionary alloc] init];
     _cellsByIndexPath = [[NSMutableDictionary alloc] init];
@@ -17,27 +21,76 @@
 }
 - (void)dealloc
 {
+  [_rowPaths release]; [_rowRects release]; [_sectionViews release]; [_backgroundView release]; [_refreshControl release];
   [_tableFooterView release];
   [_sectionRows release]; [_cellsByIndexPath release]; [_registeredCellClasses release];
   [_selectedIndexPath release]; [_reusableCells release]; [_visibleCells release]; [super dealloc];
 }
 - (id)dataSource { return _dataSource; }
-- (void)setDataSource:(id)dataSource { _dataSource = dataSource; }
+- (void)setDataSource:(id)dataSource { _dataSource = dataSource; _dataDirty = YES; [self setNeedsLayout]; }
 - (id)delegate { return _delegate; }
 - (void)setDelegate:(id)delegate { _delegate = delegate; }
 - (CGFloat)rowHeight { return _rowHeight; }
 - (void)setRowHeight:(CGFloat)height
 {
-  if (!isfinite(height) || height <= 0) [NSException raise:NSInvalidArgumentException format:@"rowHeight must be positive"];
+  if (!isfinite(height) || (height <= 0 && height != UITableViewAutomaticDimension)) [NSException raise:NSInvalidArgumentException format:@"Invalid rowHeight"];
   _rowHeight = height;
-  /* Changing geometry must not synchronously request a first batch of cells:
-     controllers commonly set rowHeight before registering cells in viewDidLoad. */
-  NSInteger total = 0;
-  for (NSNumber *count in _sectionRows) total += [count integerValue];
-  [self setContentSize:CGSizeMake([self bounds].size.width, total * _rowHeight + _tableFooterView.frame.size.height)];
-  [self setContentOffset:[self contentOffset]];
+  if (_sectionRows && !_reloading) { _reloading = YES; @try { [self _rebuildGeometry]; } @finally { _reloading = NO; } }
   [self setNeedsLayout];
 }
+- (UIView *)backgroundView { return _backgroundView; }
+- (void)setBackgroundView:(UIView *)view {
+  if (view == _backgroundView) return;
+  [_backgroundView removeFromSuperview]; ASSIGN(_backgroundView,view);
+  if (view) [self insertSubview:view atIndex:0]; [self setNeedsLayout];
+}
+- (UIRefreshControl *)refreshControl { return _refreshControl; }
+- (void)setRefreshControl:(UIRefreshControl *)control {
+  if (control == _refreshControl) return;
+  [_refreshControl removeFromSuperview]; ASSIGN(_refreshControl,control);
+  if (control) [self addSubview:control]; [self setNeedsLayout];
+}
+- (void)_handleScrollWheel:(NSEvent *)event {
+  if (!_refreshControl || _refreshControl.refreshing) return;
+  if (self.contentOffset.y <= 0 && [event deltaY] > 0) {
+    _pullDistance += [event deltaY];
+    if (_pullDistance >= 12) { _pullDistance = 0; [_refreshControl beginRefreshing]; [_refreshControl sendActionsForControlEvents:UIControlEventValueChanged]; }
+  } else _pullDistance = 0;
+}
+- (CGFloat)_appendSectionTitle:(NSString *)text atY:(CGFloat)y {
+  if (!text.length) return y;
+  UILabel *label = [[[UILabel alloc] init] autorelease];
+  label.text = text; label.numberOfLines = 0; label.font = [UIFont systemFontOfSize:13]; label.textColor = [UIColor secondaryLabelColor];
+  CGFloat height = [label sizeThatFits:CGSizeMake(MAX(1,self.bounds.size.width-24),1000000)].height;
+  label.frame = CGRectMake(12,y+8,MAX(0,self.bounds.size.width-24),height);
+  [_sectionViews addObject:label]; [self addSubview:label];
+  return y+height+16;
+}
+- (void)_rebuildGeometry {
+  if (!_rowRects) return;
+  for (UIView *view in _sectionViews) [view removeFromSuperview]; [_sectionViews removeAllObjects];
+  [_rowPaths removeAllObjects]; [_rowRects removeAllObjects]; _geometryWidth = self.bounds.size.width; CGFloat y = 0;
+  for (NSInteger section = 0; section < self.numberOfSections; section++) {
+    if ([_dataSource respondsToSelector:@selector(tableView:titleForHeaderInSection:)]) y = [self _appendSectionTitle:[_dataSource tableView:self titleForHeaderInSection:section] atY:y];
+    for (NSInteger row = 0; row < [self numberOfRowsInSection:section]; row++) {
+      NSIndexPath *path = [NSIndexPath indexPathForRow:row inSection:section];
+      CGFloat height = _rowHeight;
+      if (height == UITableViewAutomaticDimension) {
+        UITableViewCell *cell = [_cellsByIndexPath objectForKey:path]; BOOL temporary = !cell;
+        if (!cell) cell = [_dataSource tableView:self cellForRowAtIndexPath:path];
+        height = cell ? [cell sizeThatFits:CGSizeMake(_geometryWidth,1000000)].height : MAX(44,_estimatedRowHeight);
+        if (temporary && cell) [self _recycleCell:cell];
+      }
+      height = MAX(1,height);
+      [_rowPaths addObject:path];
+      [_rowRects setObject:[NSValue valueWithRect:CGRectMake(0,y,_geometryWidth,height)] forKey:path]; y += height;
+    }
+    if ([_dataSource respondsToSelector:@selector(tableView:titleForFooterInSection:)]) y = [self _appendSectionTitle:[_dataSource tableView:self titleForFooterInSection:section] atY:y];
+  }
+  _tableFooterView.frame = CGRectMake(0,y,_geometryWidth,_tableFooterView.frame.size.height);
+  [self setContentSize:CGSizeMake(_geometryWidth,y+_tableFooterView.frame.size.height)];
+}
+
 - (NSInteger)numberOfSections { return [_sectionRows count]; }
 - (NSInteger)numberOfRowsInSection:(NSInteger)section
 {
@@ -49,11 +102,9 @@
 }
 - (CGRect)rectForRowAtIndexPath:(NSIndexPath *)path
 {
-  if (![self _validIndexPath:path]) return CGRectZero;
-  NSInteger row = [path row];
-  for (NSInteger section = 0; section < [path section]; section++) row += [self numberOfRowsInSection:section];
-  return CGRectMake(0, row * _rowHeight, [self bounds].size.width, _rowHeight);
+  return [[_rowRects objectForKey:path] rectValue];
 }
+
 - (void)registerClass:(Class)cellClass forCellReuseIdentifier:(NSString *)identifier
 {
   if (!identifier) [NSException raise:NSInvalidArgumentException format:@"Missing reuse identifier"];
@@ -132,14 +183,15 @@
     for (UITableViewCell *cell in [_cellsByIndexPath allValues]) [self _recycleCell:cell];
     [_cellsByIndexPath removeAllObjects]; [_visibleCells removeAllObjects];
     NSInteger sections = !_dataSource ? 0 : ([_dataSource respondsToSelector:@selector(numberOfSectionsInTableView:)] ? [_dataSource numberOfSectionsInTableView:self] : 1);
-    NSMutableArray *counts = [NSMutableArray array]; NSInteger total = 0;
+    NSMutableArray *counts = [NSMutableArray array];
     for (NSInteger section = 0; section < sections; section++) {
       NSInteger count = MAX(0, [_dataSource tableView:self numberOfRowsInSection:section]);
-      [counts addObject:[NSNumber numberWithInteger:count]]; total += count;
+      [counts addObject:[NSNumber numberWithInteger:count]];
     }
     ASSIGN(_sectionRows, counts);
     if (![self _validIndexPath:_selectedIndexPath]) DESTROY(_selectedIndexPath);
-    [self setContentSize:CGSizeMake([self bounds].size.width, total * _rowHeight + _tableFooterView.frame.size.height)];
+    [self _rebuildGeometry];
+    _dataDirty = NO;
     [self setContentOffset:[self contentOffset]];
   } @finally { _reloading = NO; }
   [self _updateVisibleContent];
@@ -148,13 +200,17 @@
 {
   if (_reloading || !_cellsByIndexPath) return;
   CGRect visible = [self visibleContentRect];
-  NSMutableArray *paths = [NSMutableArray array]; NSInteger base = 0;
-  for (NSInteger section = 0; section < [self numberOfSections]; section++) {
-    NSInteger count = [self numberOfRowsInSection:section];
-    NSInteger first = MAX(0, (NSInteger)floor(NSMinY(visible) / _rowHeight) - base);
-    NSInteger last = MIN(count, (NSInteger)ceil(NSMaxY(visible) / _rowHeight) - base);
-    for (NSInteger row = first; row < last; row++) [paths addObject:[NSIndexPath indexPathForRow:row inSection:section]];
-    base += count;
+  NSMutableArray *paths = [NSMutableArray array];
+  NSUInteger low = 0, high = _rowPaths.count;
+  while (low < high) {
+    NSUInteger mid = low+(high-low)/2;
+    if (NSMaxY([self rectForRowAtIndexPath:[_rowPaths objectAtIndex:mid]]) <= NSMinY(visible)) low = mid+1;
+    else high = mid;
+  }
+  for (NSUInteger i = low; i < _rowPaths.count; i++) {
+    NSIndexPath *path = [_rowPaths objectAtIndex:i]; CGRect rect = [self rectForRowAtIndexPath:path];
+    if (NSMinY(rect) >= NSMaxY(visible)) break;
+    if (NSIntersectsRect(visible,rect)) [paths addObject:path];
   }
   NSSet *wanted = [NSSet setWithArray:paths];
   for (NSIndexPath *path in [_cellsByIndexPath allKeys])
@@ -175,15 +231,13 @@
 - (void)layoutSubviews
 {
   [super layoutSubviews];
-  if (_tableFooterView) {
-    NSInteger total = 0; for (NSNumber *count in _sectionRows) total += count.integerValue;
-    _tableFooterView.frame = CGRectMake(0,total*_rowHeight,self.bounds.size.width,_tableFooterView.frame.size.height);
+  if (_dataDirty) [self reloadData];
+  if (_geometryWidth != self.bounds.size.width) {
+    _reloading = YES; @try { [self _rebuildGeometry]; } @finally { _reloading = NO; }
   }
-  CGSize size = [self contentSize];
-  if (size.width != [self bounds].size.width) {
-    size.width = [self bounds].size.width; [self setContentSize:size];
-    [self _updateVisibleContent];
-  }
+  _backgroundView.frame = self.visibleContentRect;
+  _refreshControl.frame = CGRectMake(0,self.contentOffset.y,self.bounds.size.width,32);
+  [self _updateVisibleContent];
 }
 - (NSArray *)visibleCells { return [[_visibleCells copy] autorelease]; }
 - (NSArray *)indexPathsForVisibleRows { return [[_cellsByIndexPath allKeys] sortedArrayUsingSelector:@selector(compare:)]; }

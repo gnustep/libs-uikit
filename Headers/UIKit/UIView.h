@@ -2,6 +2,7 @@
 #define GNUSTEP_UIKIT_UIVIEW_H
 
 #import <UIKit/UIResponder.h>
+#import <UIKit/UIViewLayer.h>
 #import <UIKit/UILayoutGuide.h>
 extern const CGFloat UIViewNoIntrinsicMetric;
 
@@ -9,6 +10,8 @@ extern const CGFloat UIViewNoIntrinsicMetric;
 
 @interface UIView : UIResponder
 {
+  NSString *_accessibilityHint;
+  BOOL _isAccessibilityElement;
   NSString *_accessibilityLabel, *_accessibilityIdentifier;
   UIColor *_backgroundColor;
   BOOL _hidden;
@@ -23,6 +26,7 @@ extern const CGFloat UIViewNoIntrinsicMetric;
   NSMutableArray *_gestureRecognizers;
   UITouch *_activeTouch;
   id _owningViewController;
+  UIViewLayer *_layer;
   id _nativeView;
   CGRect _frame, _bounds;
   NSMutableArray *_subviews;
@@ -38,6 +42,8 @@ extern const CGFloat UIViewNoIntrinsicMetric;
   UIEdgeInsets _layoutMargins;
   UILayoutPriority _uiHugging[2], _uiCompression[2];
 }
+@property(nonatomic, copy) NSString *accessibilityHint;
+@property(nonatomic) BOOL isAccessibilityElement;
 @property(nonatomic, copy) NSString *accessibilityLabel;
 @property(nonatomic, copy) NSString *accessibilityIdentifier;
 - (id)initWithCoder:(NSCoder *)coder;
@@ -92,6 +98,7 @@ extern const CGFloat UIViewNoIntrinsicMetric;
 - (void)setNeedsDisplay;
 - (void)setNeedsLayout;
 - (void)layoutIfNeeded;
+@property(nonatomic, readonly) UIViewLayer *layer;
 - (void)layoutSubviews;
 - (CGSize)sizeThatFits:(CGSize)size;
 - (void)sizeToFit;

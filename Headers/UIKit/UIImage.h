@@ -7,6 +7,7 @@
 {
   id _image;
 }
++ (UIImage *)systemImageNamed:(NSString *)name;
 + (UIImage *)imageNamed:(NSString *)name;
 + (UIImage *)imageWithContentsOfFile:(NSString *)path;
 - (CGSize)size;

@@ -33,7 +33,7 @@
   [super dealloc];
 }
 - (id)dataSource { return _dataSource; }
-- (void)setDataSource:(id)dataSource { _dataSource = dataSource; }
+- (void)setDataSource:(id)dataSource { _dataSource = dataSource; _dataDirty = YES; [self setNeedsLayout]; }
 - (id)delegate { return _delegate; }
 - (void)setDelegate:(id)delegate { _delegate = delegate; }
 - (UICollectionViewLayout *)collectionViewLayout { return _collectionViewLayout; }
@@ -154,6 +154,7 @@
 }
 - (void)layoutSubviews
 {
+  if (_dataDirty) { _dataDirty = NO; [self reloadData]; }
   if (_cellsByIndexPath && !NSEqualSizes(_layoutSize, [self bounds].size)) [self reloadData];
   [super layoutSubviews];
 }

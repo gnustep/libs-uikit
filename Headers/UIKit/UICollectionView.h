@@ -30,7 +30,7 @@
   NSMutableDictionary *_registeredCellClasses;
   NSIndexPath *_selectedIndexPath;
   NSMutableDictionary *_cellsByIndexPath;
-  BOOL _reloading;
+  BOOL _reloading, _dataDirty;
   CGSize _layoutSize;
 }
 - (id)initWithFrame:(CGRect)frame collectionViewLayout:(UICollectionViewLayout *)layout;

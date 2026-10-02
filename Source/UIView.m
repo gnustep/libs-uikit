@@ -27,7 +27,22 @@
 - (void)mouseUp:(NSEvent *)event { [owner mouseUp:event]; }
 @end
 
+@interface UIViewLayer (Owner)
+- (id)_initWithView:(UIView *)view;
+- (void)_detach;
+@end
+@implementation UIViewLayer
+- (id)_initWithView:(UIView *)view { self = [super init]; if (self) _view = view; return self; }
+- (void)_detach { _view = nil; }
+- (CGFloat)cornerRadius { return _cornerRadius; }
+- (void)setCornerRadius:(CGFloat)radius { _cornerRadius = MAX(0,radius); [_view setNeedsDisplay]; }
+- (BOOL)masksToBounds { return _masksToBounds; }
+- (void)setMasksToBounds:(BOOL)flag { _masksToBounds = flag; _view.clipsToBounds = flag; }
+@end
+
 @implementation UIView
+- (UIViewLayer *)layer { if (!_layer) _layer = [[UIViewLayer alloc] _initWithView:self]; return _layer; }
+@synthesize accessibilityHint = _accessibilityHint, isAccessibilityElement = _isAccessibilityElement;
 @synthesize accessibilityLabel = _accessibilityLabel, accessibilityIdentifier = _accessibilityIdentifier;
 - (id)init { return [self initWithFrame:CGRectZero]; }
 - (id)initWithCoder:(NSCoder *)coder { return [self initWithFrame:CGRectZero]; }
@@ -47,6 +62,8 @@
 }
 - (void)dealloc
 {
+  [_layer _detach]; [_layer release];
+  [_accessibilityHint release];
   [_accessibilityLabel release]; [_accessibilityIdentifier release];
   [NSObject cancelPreviousPerformRequestsWithTarget:self];
   [self _uiDestroyLayout];
@@ -202,7 +219,13 @@
 - (void)layoutSubviews {}
 - (CGSize)sizeThatFits:(CGSize)size { return [self bounds].size; }
 - (void)sizeToFit { CGRect frame = [self frame]; frame.size = [self sizeThatFits:frame.size]; [self setFrame:frame]; }
-- (void)drawRect:(CGRect)rect { if (_backgroundColor) { [[_backgroundColor NSColor] set]; NSRectFill(rect); } }
+- (void)drawRect:(CGRect)rect {
+  if (_backgroundColor) {
+    [[_backgroundColor NSColor] set];
+    if (_layer.cornerRadius > 0) [[NSBezierPath bezierPathWithRoundedRect:self.bounds xRadius:_layer.cornerRadius yRadius:_layer.cornerRadius] fill];
+    else NSRectFill(rect);
+  }
+}
 - (BOOL)endEditing:(BOOL)force
 {
   UIResponder *responder = [[self window] _firstResponder];
