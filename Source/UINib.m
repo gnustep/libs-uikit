@@ -11,6 +11,7 @@
   NSMutableArray *_pendingOutlets;
   NSMutableArray *_pendingActions;
   NSMutableArray *_pendingConstraints;
+  NSMutableDictionary *_segmentSelections;
 }
 - (id)initWithOwner:(id)owner bundle:(NSBundle *)bundle;
 - (NSArray *)parseFile:(NSString *)path;
@@ -31,6 +32,7 @@
       _pendingOutlets = [[NSMutableArray alloc] init];
       _pendingActions = [[NSMutableArray alloc] init];
       _pendingConstraints = [[NSMutableArray alloc] init];
+      _segmentSelections = [[NSMutableDictionary alloc] init];
     }
   return self;
 }
@@ -43,6 +45,7 @@
   [_pendingOutlets release];
   [_pendingActions release];
   [_pendingConstraints release];
+  [_segmentSelections release];
   [super dealloc];
 }
 - (NSString *)_classNameForElement:(NSString *)element attributes:(NSDictionary *)attributes
@@ -67,6 +70,8 @@
     return @"UITextField";
   if ([element isEqualToString:@"textView"])
     return @"UITextView";
+  if ([element isEqualToString:@"progressView"]) return @"UIProgressView";
+  if ([element isEqualToString:@"stepper"]) return @"UIStepper";
   if ([element isEqualToString:@"slider"])
     return @"UISlider";
   if ([element isEqualToString:@"switch"])
@@ -116,6 +121,7 @@
 }
 - (UIColor *)_colorFromAttributes:(NSDictionary *)attributes
 {
+  if ([[attributes objectForKey:@"systemColor"] isEqual:@"systemBackgroundColor"]) return [UIColor systemBackgroundColor];
   NSString *white = [attributes objectForKey:@"white"];
   NSString *red = [attributes objectForKey:@"red"];
   NSString *green = [attributes objectForKey:@"green"];
@@ -191,6 +197,8 @@
         [object setTranslatesAutoresizingMaskIntoConstraints:[[attributes objectForKey:@"translatesAutoresizingMaskIntoConstraints"] boolValue]];
       if (objectID != nil)
         [_objectsByID setObject:object forKey:objectID];
+      if ([object isKindOfClass:[UISegmentedControl class]] && objectID && [attributes objectForKey:@"selectedSegmentIndex"])
+        [_segmentSelections setObject:[attributes objectForKey:@"selectedSegmentIndex"] forKey:objectID];
       if (tag != nil && [object respondsToSelector:@selector(setTag:)])
         [object setTag:[tag integerValue]];
       if (text != nil && [object respondsToSelector:@selector(setText:)])
@@ -203,10 +211,21 @@
         [object setTextAlignment:UIKitTextAlignmentFromString(alignment)];
       if (image != nil && [object respondsToSelector:@selector(setImage:)])
         [object setImage:[UIImage imageNamed:image]];
-      if (minimumValue != nil && [object respondsToSelector:@selector(setMinimumValue:)])
-        [object setMinimumValue:[minimumValue floatValue]];
-      if (maximumValue != nil && [object respondsToSelector:@selector(setMaximumValue:)])
-        [object setMaximumValue:[maximumValue floatValue]];
+      if (minimumValue != nil && [object isKindOfClass:[UISlider class]])
+        [(UISlider *)object setMinimumValue:[minimumValue floatValue]];
+      if (maximumValue != nil && [object isKindOfClass:[UISlider class]])
+        [(UISlider *)object setMaximumValue:[maximumValue floatValue]];
+      if ([object isKindOfClass:[UIStepper class]]) {
+        UIStepper *stepper = object;
+        if ([attributes objectForKey:@"minimumValue"]) stepper.minimumValue = [[attributes objectForKey:@"minimumValue"] doubleValue];
+        if ([attributes objectForKey:@"maximumValue"]) stepper.maximumValue = [[attributes objectForKey:@"maximumValue"] doubleValue];
+        if ([attributes objectForKey:@"stepValue"]) stepper.stepValue = [[attributes objectForKey:@"stepValue"] doubleValue];
+        if (value) stepper.value = [value doubleValue];
+      }
+      if ([object isKindOfClass:[UIProgressView class]])
+        [(UIProgressView *)object setProgress:[[attributes objectForKey:@"progress"] floatValue]];
+      if ([object isKindOfClass:[UILabel class]] && [attributes objectForKey:@"numberOfLines"])
+        [(UILabel *)object setNumberOfLines:[[attributes objectForKey:@"numberOfLines"] integerValue]];
       if (value != nil && [object isKindOfClass:[UISlider class]])
         [(UISlider *)object setValue:[value floatValue]];
       if (on != nil && [object respondsToSelector:@selector(setOn:)])
@@ -302,6 +321,8 @@
   if ([parser parse] == NO)
     [NSException raise:NSInvalidArgumentException format:@"Invalid XIB %@: %@", path, [parser parserError]];
 
+  for (NSString *key in _segmentSelections)
+    [(UISegmentedControl *)[_objectsByID objectForKey:key] setSelectedSegmentIndex:[[_segmentSelections objectForKey:key] integerValue]];
   [self _connectPendingConstraints];
   [self _connectPendingReferences];
 
@@ -328,6 +349,10 @@
   id parent = [_objectStack lastObject];
   [_elementStack addObject:[NSNull null]];
 
+  if ([elementName isEqual:@"segment"] && [parent isKindOfClass:[UISegmentedControl class]]) {
+    [parent insertSegmentWithTitle:[attributeDict objectForKey:@"title"] atIndex:[parent numberOfSegments] animated:NO];
+    return;
+  }
   if ([elementName isEqual:@"constraint"]) {
     if (!parent) [NSException raise:NSInvalidArgumentException format:@"XIB constraint has no owner"];
     [_pendingConstraints addObject:[NSDictionary dictionaryWithObjectsAndKeys:attributeDict, @"attributes", parent, @"owner", nil]];
@@ -337,7 +362,9 @@
     if (![parent isKindOfClass:[UIView class]]) [NSException raise:NSInvalidArgumentException format:@"XIB layout guide has no view"];
     NSString *key = [attributeDict objectForKey:@"key"];
     UILayoutGuide *guide;
-    if ([key isEqual:@"safeArea"]) guide = [parent safeAreaLayoutGuide];
+    if ([parent isKindOfClass:[UIScrollView class]] && [key isEqual:@"contentLayoutGuide"]) guide = [parent contentLayoutGuide];
+    else if ([parent isKindOfClass:[UIScrollView class]] && [key isEqual:@"frameLayoutGuide"]) guide = [parent frameLayoutGuide];
+    else if ([key isEqual:@"safeArea"]) guide = [parent safeAreaLayoutGuide];
     else if ([key isEqual:@"layoutMargins"]) guide = [parent layoutMarginsGuide];
     else { guide = [[[UILayoutGuide alloc] init] autorelease]; [(UIView *)parent addLayoutGuide:guide]; }
     if ([attributeDict objectForKey:@"id"]) [_objectsByID setObject:guide forKey:[attributeDict objectForKey:@"id"]];

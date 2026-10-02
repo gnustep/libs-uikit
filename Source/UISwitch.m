@@ -2,6 +2,7 @@
 #import <UIKit/UISwitch.h>
 
 @implementation UISwitch
+- (CGSize)intrinsicContentSize { return CGSizeMake(40,24); }
 - (id)initWithFrame:(CGRect)frame
 {
   self = [super initWithFrame:frame];
@@ -22,7 +23,7 @@
   [super dealloc];
 }
 - (void)_uiSwitchChanged:(id)sender { [self sendActionsForControlEvents:UIControlEventValueChanged]; }
-- (BOOL)isOn { return [_switchButton state] == NSOnState; }
+- (BOOL)isOn { return [(NSButton *)_switchButton state] == NSOnState; }
 - (void)setOn:(BOOL)on { [_switchButton setState:(on ? NSOnState : NSOffState)]; }
 - (void)setEnabled:(BOOL)enabled
 {

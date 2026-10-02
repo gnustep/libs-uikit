@@ -111,6 +111,8 @@ const UIWindowLevel UIWindowLevelAlert = 2000;
 {
   [[self retain] autorelease]; [self endEditing:YES]; [self setHidden:YES];
   [[UIApplication sharedApplication] removeWindow:self];
+  if (_rootViewController.presentingViewController)
+    [_rootViewController dismissViewControllerAnimated:NO completion:NULL];
 }
 - (void)close { [_nativeWindow close]; }
 - (void)sendEvent:(UIEvent *)event { [_nativeWindow sendEvent:[event NSEvent]]; }

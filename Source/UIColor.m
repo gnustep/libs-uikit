@@ -1,6 +1,7 @@
 #import "UIKitPrivate.h"
 
 @implementation UIColor
++ (UIColor *)systemBackgroundColor { return [self _colorWithNSColor:[NSColor windowBackgroundColor]]; }
 + (UIColor *)_colorWithNSColor:(NSColor *)color
 {
   UIColor *uiColor = [[[self alloc] init] autorelease];

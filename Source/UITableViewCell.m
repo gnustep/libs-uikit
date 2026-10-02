@@ -26,9 +26,25 @@
 }
 - (void)dealloc
 {
+  [_accessoryLabel release];
   [_textLabel release];
   [_reuseIdentifier release];
   [super dealloc];
+}
+- (UITableViewCellAccessoryType)accessoryType { return _accessoryType; }
+- (void)setAccessoryType:(UITableViewCellAccessoryType)type
+{
+  _accessoryType = type;
+  if (!_accessoryLabel) { _accessoryLabel = [[UILabel alloc] initWithFrame:CGRectZero]; [self addSubview:_accessoryLabel]; }
+  _accessoryLabel.text = type == UITableViewCellAccessoryCheckmark ? @"✓" : type == UITableViewCellAccessoryNone ? @"" : @"›";
+  [self setNeedsLayout];
+}
+- (void)layoutSubviews
+{
+  [super layoutSubviews];
+  CGFloat reserve = _accessoryType == UITableViewCellAccessoryNone ? 0 : 24;
+  _textLabel.frame = CGRectMake(12,8,MAX(0,self.bounds.size.width-24-reserve),MAX(0,self.bounds.size.height-16));
+  _accessoryLabel.frame = CGRectMake(self.bounds.size.width-28,8,20,MAX(0,self.bounds.size.height-16));
 }
 - (UILabel *)textLabel { return _textLabel; }
 - (NSString *)reuseIdentifier { return _reuseIdentifier; }

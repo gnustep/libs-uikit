@@ -534,6 +534,14 @@ static void UILayoutCollect(UIView *view, NSMutableArray *items, NSMutableArray 
       double *row = [negative mutableBytes]; for (NSUInteger c = 0; c <= variables; c++) row[c] = -row[c];
       [accepted addObject:negative];
     }
+    /* The current solution already satisfies all accepted equations. Avoid
+       rebuilding the tableau if it also satisfies the new equation. */
+    const double *coefficients = [e->coefficients bytes];
+    double residual = -coefficients[variables];
+    for (NSUInteger c = 0; c < variables; c++) residual += coefficients[c]*solution[c];
+    BOOL satisfied = e->relation == NSLayoutRelationEqual ? fabs(residual) < 1e-8 :
+      e->relation == NSLayoutRelationLessThanOrEqual ? residual <= 1e-8 : residual >= -1e-8;
+    if (satisfied) continue;
     if (UILayoutFeasible(accepted, variables, candidate)) memcpy(solution, candidate, variables*sizeof(double));
     else {
       [accepted removeObjectsInRange:NSMakeRange(previous, [accepted count]-previous)];
@@ -546,7 +554,10 @@ static void UILayoutCollect(UIView *view, NSMutableArray *items, NSMutableArray 
     NSUInteger p = [[indices objectForKey:[NSValue valueWithPointer:parent]] unsignedIntegerValue];
     CGRect frame = CGRectMake(solution[i*4]-solution[p*4]+[parent bounds].origin.x,
       solution[i*4+1]-solution[p*4+1]+[parent bounds].origin.y, MAX(0,solution[i*4+2]), MAX(0,solution[i*4+3]));
-    if (guide) [item _setLayoutFrame:frame];
+    if (guide) {
+      if (!NSEqualRects([item layoutFrame], frame)) [parent setNeedsLayout];
+      [item _setLayoutFrame:frame];
+    }
     else if (![item translatesAutoresizingMaskIntoConstraints]) {
       CGRect old = [item frame];
       if (fabs(old.origin.x-frame.origin.x) > 1e-7 || fabs(old.origin.y-frame.origin.y) > 1e-7 ||

@@ -82,6 +82,15 @@ enum {
   UIControlEventAllEvents = 0xffffffff
 };
 
+typedef NSInteger UITableViewCellEditingStyle;
+enum { UITableViewCellEditingStyleNone, UITableViewCellEditingStyleDelete, UITableViewCellEditingStyleInsert };
+typedef NSInteger UITableViewCellAccessoryType;
+enum { UITableViewCellAccessoryNone, UITableViewCellAccessoryDisclosureIndicator, UITableViewCellAccessoryDetailDisclosureButton, UITableViewCellAccessoryCheckmark, UITableViewCellAccessoryDetailButton };
+typedef NSInteger UITableViewRowAnimation;
+enum { UITableViewRowAnimationFade, UITableViewRowAnimationRight, UITableViewRowAnimationLeft, UITableViewRowAnimationTop, UITableViewRowAnimationBottom, UITableViewRowAnimationNone, UITableViewRowAnimationMiddle, UITableViewRowAnimationAutomatic = 100 };
+typedef NSInteger UIScrollViewKeyboardDismissMode;
+enum { UIScrollViewKeyboardDismissModeNone, UIScrollViewKeyboardDismissModeOnDrag, UIScrollViewKeyboardDismissModeInteractive };
+
 typedef NSInteger UITableViewCellSelectionStyle;
 enum {
   UITableViewCellSelectionStyleNone = 0,

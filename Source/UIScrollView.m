@@ -3,9 +3,14 @@
 
 /* UIKit indicators overlay the content; AppKit scrollers normally consume
    viewport space (and can appear on the left under a theme). */
-@interface _UIKitScrollPeer : NSScrollView
+@interface _UIKitScrollPeer : NSScrollView { @public UIScrollView *owner; }
 @end
 @implementation _UIKitScrollPeer
+- (void)scrollWheel:(NSEvent *)event
+{
+  if (owner.keyboardDismissMode != UIScrollViewKeyboardDismissModeNone) [[owner window] endEditing:YES];
+  [super scrollWheel:event];
+}
 - (void)tile
 {
   [super tile];
@@ -26,11 +31,13 @@
 - (void)mouseUp:(NSEvent *)event { [owner mouseUp:event]; }
 @end
 @implementation UIScrollView
+@synthesize keyboardDismissMode = _keyboardDismissMode;
 - (id)initWithFrame:(CGRect)frame
 {
   self = [super initWithFrame:frame];
   if (self) {
     _scrollView = [[_UIKitScrollPeer alloc] initWithFrame:[self bounds]];
+    ((_UIKitScrollPeer *)_scrollView)->owner = self;
     [_scrollView setDrawsBackground:NO];
     [[_scrollView contentView] setDrawsBackground:NO];
     [_scrollView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
@@ -52,8 +59,29 @@
 {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   ((_UIKitScrollDocumentView *)_documentView)->owner = nil;
+  ((_UIKitScrollPeer *)_scrollView)->owner = nil;
   [_scrollView release]; [_documentView release];
   [super dealloc];
+}
+- (UILayoutGuide *)contentLayoutGuide
+{
+  if (!_contentLayoutGuide) {
+    _contentLayoutGuide = [[[UILayoutGuide alloc] init] autorelease]; [self addLayoutGuide:_contentLayoutGuide];
+    [NSLayoutConstraint activateConstraints:@[[_contentLayoutGuide.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:-self.contentOffset.x],
+      [_contentLayoutGuide.topAnchor constraintEqualToAnchor:self.topAnchor constant:-self.contentOffset.y]]];
+  }
+  return _contentLayoutGuide;
+}
+- (UILayoutGuide *)frameLayoutGuide
+{
+  if (!_frameLayoutGuide) {
+    _frameLayoutGuide = [[[UILayoutGuide alloc] init] autorelease]; [self addLayoutGuide:_frameLayoutGuide];
+    [NSLayoutConstraint activateConstraints:@[[_frameLayoutGuide.widthAnchor constraintEqualToAnchor:self.widthAnchor],
+      [_frameLayoutGuide.heightAnchor constraintEqualToAnchor:self.heightAnchor],
+      [_frameLayoutGuide.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+      [_frameLayoutGuide.topAnchor constraintEqualToAnchor:self.topAnchor]]];
+  }
+  return _frameLayoutGuide;
 }
 - (id)delegate { return _scrollDelegate; }
 - (void)setDelegate:(id)delegate { _scrollDelegate = delegate; }
@@ -83,6 +111,14 @@
 - (void)_updateVisibleContent {}
 - (void)_clipBoundsChanged:(NSNotification *)notification
 {
+  if (_contentLayoutGuide) {
+    CGPoint offset = [self contentOffset];
+    for (NSLayoutConstraint *constraint in [self constraints]) {
+      if (constraint.firstItem != _contentLayoutGuide || constraint.secondItem != self) continue;
+      CGFloat value = constraint.firstAttribute == NSLayoutAttributeLeading ? -offset.x : -offset.y;
+      if (constraint.constant != value) constraint.constant = value;
+    }
+  }
   if (_updatingVisibleContent) return;
   _updatingVisibleContent = YES;
   @try { [self _updateVisibleContent]; }
@@ -94,6 +130,7 @@
 - (void)layoutSubviews
 {
   [super layoutSubviews];
+  if (_contentLayoutGuide) [self setContentSize:_contentLayoutGuide.layoutFrame.size];
   [_scrollView setFrame:CGRectMake(0,0,[self bounds].size.width,[self bounds].size.height)];
   [self _clipBoundsChanged:nil];
 }

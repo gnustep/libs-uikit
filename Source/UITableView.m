@@ -17,6 +17,7 @@
 }
 - (void)dealloc
 {
+  [_tableFooterView release];
   [_sectionRows release]; [_cellsByIndexPath release]; [_registeredCellClasses release];
   [_selectedIndexPath release]; [_reusableCells release]; [_visibleCells release]; [super dealloc];
 }
@@ -33,7 +34,7 @@
      controllers commonly set rowHeight before registering cells in viewDidLoad. */
   NSInteger total = 0;
   for (NSNumber *count in _sectionRows) total += [count integerValue];
-  [self setContentSize:CGSizeMake([self bounds].size.width, total * _rowHeight)];
+  [self setContentSize:CGSizeMake([self bounds].size.width, total * _rowHeight + _tableFooterView.frame.size.height)];
   [self setContentOffset:[self contentOffset]];
   [self setNeedsLayout];
 }
@@ -86,6 +87,43 @@
   }
   [cell removeFromSuperview];
 }
+- (UIView *)tableFooterView { return _tableFooterView; }
+- (void)setTableFooterView:(UIView *)view
+{
+  if (_tableFooterView == view) return;
+  [_tableFooterView removeFromSuperview]; ASSIGN(_tableFooterView, view);
+  if (view) [self addSubview:view];
+  [self setRowHeight:_rowHeight]; [self setNeedsLayout];
+}
+- (void)deleteRowsAtIndexPaths:(NSArray *)paths withRowAnimation:(UITableViewRowAnimation)animation
+{
+  NSSet *unique = [NSSet setWithArray:paths];
+  if (unique.count != paths.count) [NSException raise:NSInvalidArgumentException format:@"Duplicate deleted row"];
+  for (NSIndexPath *path in paths)
+    if (![self _validIndexPath:path]) [NSException raise:NSRangeException format:@"Invalid deleted row"];
+  NSIndexPath *selection = [[_selectedIndexPath retain] autorelease];
+  if ([unique containsObject:selection]) selection = nil;
+  else if (selection) {
+    NSInteger row = selection.row;
+    for (NSIndexPath *path in paths) if (path.section == selection.section && path.row < selection.row) row--;
+    selection = [NSIndexPath indexPathForRow:row inSection:selection.section];
+  }
+  ASSIGN(_selectedIndexPath, selection);
+  [self reloadData];
+}
+- (void)scrollToRowAtIndexPath:(NSIndexPath *)path atScrollPosition:(UITableViewScrollPosition)position animated:(BOOL)animated
+{
+  if (![self _validIndexPath:path]) [NSException raise:NSRangeException format:@"Invalid row"];
+  CGRect row = [self rectForRowAtIndexPath:path], visible = [self visibleContentRect];
+  CGFloat y = row.origin.y;
+  if (position == UITableViewScrollPositionMiddle) y -= (visible.size.height-row.size.height)/2;
+  else if (position == UITableViewScrollPositionBottom) y -= visible.size.height-row.size.height;
+  else if (position == UITableViewScrollPositionNone) {
+    if (NSContainsRect(visible,row)) return;
+    if (NSMaxY(row) > NSMaxY(visible)) y = NSMaxY(row)-visible.size.height;
+  }
+  [self setContentOffset:CGPointMake(self.contentOffset.x,y) animated:animated];
+}
 - (void)reloadData
 {
   if (_reloading) return;
@@ -101,7 +139,7 @@
     }
     ASSIGN(_sectionRows, counts);
     if (![self _validIndexPath:_selectedIndexPath]) DESTROY(_selectedIndexPath);
-    [self setContentSize:CGSizeMake([self bounds].size.width, total * _rowHeight)];
+    [self setContentSize:CGSizeMake([self bounds].size.width, total * _rowHeight + _tableFooterView.frame.size.height)];
     [self setContentOffset:[self contentOffset]];
   } @finally { _reloading = NO; }
   [self _updateVisibleContent];
@@ -137,6 +175,10 @@
 - (void)layoutSubviews
 {
   [super layoutSubviews];
+  if (_tableFooterView) {
+    NSInteger total = 0; for (NSNumber *count in _sectionRows) total += count.integerValue;
+    _tableFooterView.frame = CGRectMake(0,total*_rowHeight,self.bounds.size.width,_tableFooterView.frame.size.height);
+  }
   CGSize size = [self contentSize];
   if (size.width != [self bounds].size.width) {
     size.width = [self bounds].size.width; [self setContentSize:size];

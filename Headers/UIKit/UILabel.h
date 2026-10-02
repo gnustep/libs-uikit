@@ -10,7 +10,9 @@
   id _textField;
   NSTextAlignment _textAlignment;
   NSInteger _numberOfLines;
+  BOOL _adjustsFontForContentSizeCategory;
 }
+@property(nonatomic) BOOL adjustsFontForContentSizeCategory;
 - (NSString *)text;
 - (void)setText:(NSString *)text;
 - (UIColor *)textColor;

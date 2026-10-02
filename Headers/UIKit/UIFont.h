@@ -3,10 +3,14 @@
 
 #import <UIKit/UIKitTypes.h>
 
+typedef NSString *UIFontTextStyle;
+extern UIFontTextStyle const UIFontTextStyleTitle1;
+
 @interface UIFont : NSObject
 {
   id _font;
 }
++ (UIFont *)preferredFontForTextStyle:(UIFontTextStyle)style;
 + (UIFont *)systemFontOfSize:(CGFloat)fontSize;
 + (UIFont *)boldSystemFontOfSize:(CGFloat)fontSize;
 + (UIFont *)fontWithName:(NSString *)fontName size:(CGFloat)fontSize;

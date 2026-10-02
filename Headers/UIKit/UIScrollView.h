@@ -11,12 +11,17 @@
 
 @interface UIScrollView : UIView
 {
+  UILayoutGuide *_contentLayoutGuide, *_frameLayoutGuide;
   id _scrollView;
   id _documentView;
   CGSize _contentSize;
   id _scrollDelegate;
   BOOL _updatingVisibleContent;
+  UIScrollViewKeyboardDismissMode _keyboardDismissMode;
 }
+@property(nonatomic, readonly) UILayoutGuide *contentLayoutGuide;
+@property(nonatomic, readonly) UILayoutGuide *frameLayoutGuide;
+@property(nonatomic) UIScrollViewKeyboardDismissMode keyboardDismissMode;
 - (id)delegate;
 - (void)setDelegate:(id)delegate;
 - (CGRect)visibleContentRect;

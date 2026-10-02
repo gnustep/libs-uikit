@@ -6,6 +6,7 @@
 @interface UIStackView : UIView
 {
   NSMutableArray *_arrangedSubviews;
+  NSArray *_arrangementConstraints;
   UILayoutConstraintAxis _axis;
   UIStackViewDistribution _distribution;
   UIStackViewAlignment _alignment;

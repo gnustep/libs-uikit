@@ -15,11 +15,49 @@
 }
 - (void)dealloc
 {
+  if (_presentedViewController) _presentedViewController->_presentingViewController = nil;
+  [_presentationWindow close]; [_presentationWindow release]; [_presentedViewController release];
   for (UIViewController *child in _childViewControllers) child->_parentViewController = nil;
   [_view _setOwningViewController:nil];
   [_childViewControllers release]; [_view release]; [_title release];
   [_nibName release]; [_nibBundle release]; [_nibTopLevelObjects release];
   [super dealloc];
+}
+- (UINavigationController *)navigationController
+{
+  for (UIViewController *parent = self; parent; parent = parent.parentViewController)
+    if ([parent isKindOfClass:[UINavigationController class]]) return (UINavigationController *)parent;
+  return nil;
+}
+- (UIViewController *)presentedViewController { return _presentedViewController; }
+- (UIViewController *)presentingViewController { return _presentingViewController; }
+- (void)presentViewController:(UIViewController *)controller animated:(BOOL)animated completion:(UIViewControllerCompletion)completion
+{
+  if (!controller || controller == self || _presentedViewController || controller->_presentingViewController)
+    [NSException raise:NSInvalidArgumentException format:@"Invalid presentation"];
+  [controller loadViewIfNeeded];
+  _presentedViewController = [controller retain]; controller->_presentingViewController = self;
+  CGRect frame = controller.view.frame; frame.origin = CGPointMake(100,100);
+  _presentationWindow = [[UIWindow alloc] initWithFrame:frame];
+  _presentationWindow.rootViewController = controller;
+  [[_presentationWindow _nativeWindow] setTitle:controller.title ?: @""];
+  [_presentationWindow makeKeyAndVisible];
+  if (completion) CALL_BLOCK_NO_ARGS(completion);
+}
+- (void)dismissViewControllerAnimated:(BOOL)animated completion:(UIViewControllerCompletion)completion
+{
+  if (!_presentedViewController && _presentingViewController) {
+    [_presentingViewController dismissViewControllerAnimated:animated completion:completion]; return;
+  }
+  if (_presentedViewController) {
+    if (_presentedViewController->_presentedViewController)
+      [_presentedViewController dismissViewControllerAnimated:animated completion:nil];
+    _presentedViewController->_presentingViewController = nil;
+    [_presentationWindow close]; _presentationWindow.rootViewController = nil;
+    DESTROY(_presentationWindow); DESTROY(_presentedViewController);
+    [[self.view window] makeKeyWindow];
+  }
+  if (completion) CALL_BLOCK_NO_ARGS(completion);
 }
 - (BOOL)isViewLoaded { return _view != nil; }
 - (void)loadViewIfNeeded { (void)[self view]; }

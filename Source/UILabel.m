@@ -1,6 +1,7 @@
 #import "UIKitPrivate.h"
 
 @implementation UILabel
+@synthesize adjustsFontForContentSizeCategory = _adjustsFontForContentSizeCategory;
 - (id)initWithFrame:(CGRect)frame
 {
   self = [super initWithFrame:frame];

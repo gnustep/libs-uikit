@@ -9,6 +9,7 @@ extern const CGFloat UIViewNoIntrinsicMetric;
 
 @interface UIView : UIResponder
 {
+  NSString *_accessibilityLabel, *_accessibilityIdentifier;
   UIColor *_backgroundColor;
   BOOL _hidden;
   CGFloat _alpha;
@@ -37,6 +38,8 @@ extern const CGFloat UIViewNoIntrinsicMetric;
   UIEdgeInsets _layoutMargins;
   UILayoutPriority _uiHugging[2], _uiCompression[2];
 }
+@property(nonatomic, copy) NSString *accessibilityLabel;
+@property(nonatomic, copy) NSString *accessibilityIdentifier;
 - (id)initWithCoder:(NSCoder *)coder;
 - (UIWindow *)window;
 - (BOOL)autoresizesSubviews;

@@ -28,6 +28,7 @@
 @end
 
 @implementation UIView
+@synthesize accessibilityLabel = _accessibilityLabel, accessibilityIdentifier = _accessibilityIdentifier;
 - (id)init { return [self initWithFrame:CGRectZero]; }
 - (id)initWithCoder:(NSCoder *)coder { return [self initWithFrame:CGRectZero]; }
 - (id)initWithFrame:(CGRect)frame
@@ -46,6 +47,7 @@
 }
 - (void)dealloc
 {
+  [_accessibilityLabel release]; [_accessibilityIdentifier release];
   [NSObject cancelPreviousPerformRequestsWithTarget:self];
   [self _uiDestroyLayout];
   for (UIGestureRecognizer *recognizer in _gestureRecognizers) [recognizer _setView:nil];
@@ -86,7 +88,7 @@
 - (UIColor *)backgroundColor { return _backgroundColor; }
 - (void)setBackgroundColor:(UIColor *)color { ASSIGN(_backgroundColor, color); [self setNeedsDisplay]; }
 - (BOOL)isHidden { return _hidden; }
-- (void)setHidden:(BOOL)hidden { if (hidden) [self _cancelActiveTouch]; _hidden = hidden; [_nativeView setHidden:hidden]; [_superview setNeedsLayout]; }
+- (void)setHidden:(BOOL)hidden { if (hidden) [self _cancelActiveTouch]; _hidden = hidden; [_nativeView setHidden:hidden]; [_superview setNeedsLayout]; if ([_superview isKindOfClass:[UIStackView class]]) [_superview setNeedsUpdateConstraints]; }
 - (CGFloat)alpha { return _alpha; }
 - (void)setAlpha:(CGFloat)alpha { _alpha = alpha; if ([_nativeView respondsToSelector:@selector(setAlphaValue:)]) [_nativeView setAlphaValue:alpha]; }
 - (UIViewContentMode)contentMode { return _contentMode; }
@@ -180,10 +182,16 @@
   if (!_uiNeedsLayout) [self performSelector:@selector(layoutIfNeeded) withObject:nil afterDelay:0];
   _uiNeedsLayout = YES; [self setNeedsDisplay];
 }
+- (BOOL)_uiTreeNeedsLayout
+{
+  if (_uiNeedsLayout || _uiNeedsUpdateConstraints) return YES;
+  for (UIView *view in _subviews) if ([view _uiTreeNeedsLayout]) return YES;
+  return NO;
+}
 - (void)layoutIfNeeded
 {
   UIView *root = self; while ([root superview]) root = [root superview];
-  if (root->_uiSolvingLayout) return;
+  if (root->_uiSolvingLayout || ![root _uiTreeNeedsLayout]) return;
   root->_uiSolvingLayout = YES;
   @try {
     [root updateConstraintsIfNeeded];

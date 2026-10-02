@@ -20,6 +20,9 @@ UIControl.m
 UIButton.m
 UITextField.m
 UITextView.m
+UIProgressView.m
+UIStepper.m
+UIAlertController.m
 UISlider.m
 UISwitch.m
 UISegmentedControl.m

@@ -1,6 +1,8 @@
 #import "UIKitPrivate.h"
 
+UIFontTextStyle const UIFontTextStyleTitle1 = @"UICTFontTextStyleTitle1";
 @implementation UIFont
++ (UIFont *)preferredFontForTextStyle:(UIFontTextStyle)style { return [self systemFontOfSize:[style isEqual: UIFontTextStyleTitle1] ? 28 : 17]; }
 + (UIFont *)_fontWithNSFont:(NSFont *)font
 {
   UIFont *uiFont = [[[self alloc] init] autorelease];

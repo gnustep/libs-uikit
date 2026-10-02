@@ -47,6 +47,9 @@ UIKit_HEADER_FILES = \
 	UIButton.h \
 	UITextField.h \
 	UITextView.h \
+	UIProgressView.h \
+	UIStepper.h \
+	UIAlertController.h \
 	UISlider.h \
 	UISwitch.h \
 	UISegmentedControl.h \

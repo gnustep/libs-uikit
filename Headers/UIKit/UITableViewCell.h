@@ -7,12 +7,15 @@
 
 @interface UITableViewCell : UIView
 {
+  UITableViewCellAccessoryType _accessoryType;
+  UILabel *_accessoryLabel;
   UILabel *_textLabel;
   NSString *_reuseIdentifier;
   BOOL _selected;
   UITableViewCellSelectionStyle _selectionStyle;
 }
 - (id)initWithStyle:(int)style reuseIdentifier:(NSString *)reuseIdentifier;
+@property(nonatomic) UITableViewCellAccessoryType accessoryType;
 - (UILabel *)textLabel;
 - (NSString *)reuseIdentifier;
 - (UITableViewCellSelectionStyle)selectionStyle;

@@ -2,6 +2,7 @@
 #import <UIKit/UISegmentedControl.h>
 
 @implementation UISegmentedControl
+- (CGSize)intrinsicContentSize { return CGSizeMake(MAX(80, self.numberOfSegments*80),28); }
 - (id)initWithItems:(NSArray *)items
 {
   self = [self initWithFrame:NSMakeRect(0, 0, 160, 28)];

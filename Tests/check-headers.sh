@@ -11,5 +11,5 @@ for header in Headers/UIKit/*.h; do
 #endif' ;;
   esac
   printf '#import <%s>\n%s\n' "${header#Headers/}" "$boundary" |
-    $CC $(gnustep-config --objc-flags) -I"$objc_headers" -IHeaders -x objective-c -fsyntax-only -
+    $CC -IHeaders $(gnustep-config --objc-flags) -I"$objc_headers" -x objective-c -fsyntax-only -
 done

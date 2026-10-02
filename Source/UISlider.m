@@ -2,6 +2,7 @@
 #import <UIKit/UISlider.h>
 
 @implementation UISlider
+- (CGSize)intrinsicContentSize { return CGSizeMake(150,24); }
 - (id)initWithFrame:(CGRect)frame
 {
   self = [super initWithFrame:frame];

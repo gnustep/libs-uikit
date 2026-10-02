@@ -30,6 +30,9 @@ extern "C" {
 #import <UIKit/UIButton.h>
 #import <UIKit/UITextField.h>
 #import <UIKit/UITextView.h>
+#import <UIKit/UIProgressView.h>
+#import <UIKit/UIStepper.h>
+#import <UIKit/UIAlertController.h>
 #import <UIKit/UISlider.h>
 #import <UIKit/UISwitch.h>
 #import <UIKit/UISegmentedControl.h>

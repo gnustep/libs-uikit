@@ -7,6 +7,7 @@
 {
   id _color;
 }
++ (UIColor *)systemBackgroundColor;
 + (UIColor *)blackColor;
 + (UIColor *)whiteColor;
 + (UIColor *)clearColor;

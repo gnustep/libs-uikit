@@ -3,10 +3,13 @@
 
 #import <UIKit/UIResponder.h>
 
-@class UIView;
+@class UIView, UIWindow, UINavigationController;
+DEFINE_BLOCK_TYPE_NO_ARGS(UIViewControllerCompletion, void);
 
 @interface UIViewController : UIResponder
 {
+  UIViewController *_presentedViewController, *_presentingViewController;
+  UIWindow *_presentationWindow;
   UIView *_view;
   NSString *_title;
   NSArray *_nibTopLevelObjects;
@@ -19,6 +22,11 @@
   BOOL _appearanceAnimated;
   BOOL _visible;
 }
+@property(nonatomic, readonly) UINavigationController *navigationController;
+@property(nonatomic, readonly) UIViewController *presentedViewController;
+@property(nonatomic, readonly) UIViewController *presentingViewController;
+- (void)presentViewController:(UIViewController *)controller animated:(BOOL)animated completion:(UIViewControllerCompletion)completion;
+- (void)dismissViewControllerAnimated:(BOOL)animated completion:(UIViewControllerCompletion)completion;
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
 - (BOOL)isViewLoaded;
 - (void)loadViewIfNeeded;

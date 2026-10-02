@@ -7,6 +7,7 @@
 {
   id _switchButton;
 }
+@property(nonatomic, getter=isOn) BOOL on;
 - (BOOL)isOn;
 - (void)setOn:(BOOL)on;
 @end

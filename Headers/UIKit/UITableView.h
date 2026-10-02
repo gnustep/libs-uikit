@@ -10,6 +10,7 @@
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section;
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;
 @optional
+- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath;
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView;
 @end
 
@@ -30,6 +31,7 @@
   NSMutableDictionary *_registeredCellClasses;
   NSArray *_sectionRows;
   BOOL _reloading;
+  UIView *_tableFooterView;
 }
 - (id)initWithFrame:(CGRect)frame style:(UITableViewStyle)style;
 - (id)dataSource;
@@ -47,6 +49,9 @@
 - (NSArray *)indexPathsForVisibleRows;
 - (NSIndexPath *)indexPathForCell:(UITableViewCell *)cell;
 - (CGRect)rectForRowAtIndexPath:(NSIndexPath *)indexPath;
+@property(nonatomic, retain) UIView *tableFooterView;
+- (void)deleteRowsAtIndexPaths:(NSArray *)paths withRowAnimation:(UITableViewRowAnimation)animation;
+- (void)scrollToRowAtIndexPath:(NSIndexPath *)path atScrollPosition:(UITableViewScrollPosition)position animated:(BOOL)animated;
 - (void)reloadData;
 - (NSIndexPath *)indexPathForSelectedRow;
 - (UITableViewCell *)cellForRowAtIndexPath:(NSIndexPath *)indexPath;

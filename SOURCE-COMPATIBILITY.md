@@ -79,3 +79,23 @@ unchanged-app acceptance corpus.
 
 An unsupported API is a framework gap to implement, not a request that the
 application author change their source.
+
+## UIKit playground coverage
+
+The XML playground fixture now covers native-backed `UIProgressView` and
+`UIStepper`, `UISwitch.on`, segmented-control items and selection, scroll content
+and frame guides, and constrained fill/fill-equally stacks. Table support includes
+footer views, disclosure accessories, scrolling without selection, and immediate
+row deletion after a data-source update. `UIViewController.navigationController`
+and presentation/dismissal relationships support a basic `UIAlertController`
+with action handlers and completion callbacks in a separate desktop window.
+`Tests/PlaygroundTests.m` exercises these behaviors; this is not full UIKit parity.
+
+Current limits: row-update animations and swipe-to-delete UI are not implemented;
+alert presentation uses desktop windows rather than iOS modal transitions or
+popover/action-sheet placement. Keyboard dismissal ends editing on desktop wheel
+scrolling, without interactive software-keyboard tracking. Preferred Title 1 uses
+28 points; content-size-category adjustment and accessibility labels/identifiers
+are stored, without Dynamic Type notifications or native accessibility bridging.
+Progress styles share the native progress-bar appearance. Other stack distributions
+and baseline alignment retain the existing limited layout behavior.
