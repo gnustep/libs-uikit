@@ -25,6 +25,7 @@
 - (id)delegate;
 - (void)setDelegate:(id)delegate;
 - (CGRect)visibleContentRect;
+- (void)scrollRectToVisible:(CGRect)rect animated:(BOOL)animated;
 - (void)setContentOffset:(CGPoint)offset animated:(BOOL)animated;
 - (CGSize)contentSize;
 - (void)setContentSize:(CGSize)contentSize;

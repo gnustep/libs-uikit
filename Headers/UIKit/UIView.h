@@ -48,6 +48,8 @@ extern const CGFloat UIViewNoIntrinsicMetric;
 @property(nonatomic) BOOL isAccessibilityElement;
 @property(nonatomic, copy) NSString *accessibilityLabel;
 @property(nonatomic, copy) NSString *accessibilityIdentifier;
++ (BOOL)areAnimationsEnabled;
++ (void)setAnimationsEnabled:(BOOL)enabled;
 - (id)initWithCoder:(NSCoder *)coder;
 - (UIWindow *)window;
 - (BOOL)autoresizesSubviews;
@@ -117,6 +119,7 @@ extern const CGFloat UIViewNoIntrinsicMetric;
 @end
 
 @interface UIView (UILayout)
+@property(nonatomic, readonly) BOOL hasAmbiguousLayout;
 @property(nonatomic) BOOL translatesAutoresizingMaskIntoConstraints;
 @property(nonatomic, readonly) NSArray *constraints;
 @property(nonatomic, readonly) NSArray *layoutGuides;

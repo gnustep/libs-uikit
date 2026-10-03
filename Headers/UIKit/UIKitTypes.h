@@ -14,6 +14,15 @@
 typedef NSPoint CGPoint;
 typedef NSSize CGSize;
 typedef NSRect CGRect;
+
+@interface NSValue (UIKitGeometry)
++ (NSValue *)valueWithCGPoint:(CGPoint)point;
++ (NSValue *)valueWithCGSize:(CGSize)size;
++ (NSValue *)valueWithCGRect:(CGRect)rect;
+@property(nonatomic, readonly) CGPoint CGPointValue;
+@property(nonatomic, readonly) CGSize CGSizeValue;
+@property(nonatomic, readonly) CGRect CGRectValue;
+@end
 typedef struct UIEdgeInsets { CGFloat top, left, bottom, right; } UIEdgeInsets;
 typedef NSInteger NSTextAlignment;
 enum { NSTextAlignmentLeft = 0, NSTextAlignmentCenter = 1, NSTextAlignmentRight = 2,
@@ -186,6 +195,15 @@ static inline UIEdgeInsets UIEdgeInsetsMake(CGFloat top, CGFloat left, CGFloat b
 { UIEdgeInsets insets = { top, left, bottom, right }; return insets; }
 static const UIEdgeInsets UIEdgeInsetsZero = { 0, 0, 0, 0 };
 static inline BOOL CGRectContainsPoint(CGRect rect, CGPoint point) { return NSPointInRect(point, rect); }
+static inline BOOL CGRectContainsRect(CGRect outer, CGRect inner)
+{
+  /* Core Graphics rectangles may have negative dimensions. */
+  if (outer.size.width < 0) { outer.origin.x += outer.size.width; outer.size.width = -outer.size.width; }
+  if (outer.size.height < 0) { outer.origin.y += outer.size.height; outer.size.height = -outer.size.height; }
+  if (inner.size.width < 0) { inner.origin.x += inner.size.width; inner.size.width = -inner.size.width; }
+  if (inner.size.height < 0) { inner.origin.y += inner.size.height; inner.size.height = -inner.size.height; }
+  return NSContainsRect(outer, inner);
+}
 #define CGRectIntersectsRect NSIntersectsRect
 #define CGRectEqualToRect NSEqualRects
 #define CGPointEqualToPoint NSEqualPoints

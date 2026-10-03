@@ -10,6 +10,7 @@
 @property(nonatomic, getter=isOn) BOOL on;
 - (BOOL)isOn;
 - (void)setOn:(BOOL)on;
+- (void)setOn:(BOOL)on animated:(BOOL)animated;
 @end
 
 #endif

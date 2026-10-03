@@ -57,7 +57,11 @@
 - (void)setMasksToBounds:(BOOL)flag { _masksToBounds = flag; _view.clipsToBounds = flag; }
 @end
 
+static BOOL UIKitAnimationsEnabled = YES;
+
 @implementation UIView
++ (BOOL)areAnimationsEnabled { @synchronized([UIView class]) { return UIKitAnimationsEnabled; } }
++ (void)setAnimationsEnabled:(BOOL)enabled { @synchronized([UIView class]) { UIKitAnimationsEnabled = enabled; } }
 - (NSArray *)interactions { return [[_interactions copy] autorelease] ?: @[]; }
 - (void)addInteraction:(id<UIInteraction>)interaction {
   if (!interaction || [_interactions containsObject:interaction]) return;

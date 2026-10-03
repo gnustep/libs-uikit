@@ -13,6 +13,55 @@
 void testUIKitLayout(void)
 {
   UIView *root = [[UIView alloc] initWithFrame:CGRectMake(0,0,400,300)];
+  CGSize boxed = [NSValue valueWithCGSize:CGSizeMake(37,19)].CGSizeValue;
+  VERIFY(CGSizeEqualToSize(boxed, CGSizeMake(37,19)));
+  VERIFY(CGPointEqualToPoint([NSValue valueWithCGPoint:CGPointMake(3,5)].CGPointValue, CGPointMake(3,5)));
+  VERIFY(CGRectEqualToRect([NSValue valueWithCGRect:root.frame].CGRectValue, root.frame));
+  VERIFY(CGRectContainsRect(root.bounds, CGRectMake(10,10,20,20)));
+  VERIFY(!CGRectContainsRect(root.bounds, CGRectMake(390,10,20,20)));
+  VERIFY(CGRectContainsRect(CGRectMake(400,300,-400,-300), CGRectMake(10,10,20,20)));
+  VERIFY([UIView areAnimationsEnabled]);
+  [UIView setAnimationsEnabled:NO]; VERIFY(![UIView areAnimationsEnabled]);
+  [UIView setAnimationsEnabled:YES]; VERIFY([UIView areAnimationsEnabled]);
+  UISwitch *toggle = [[UISwitch alloc] init];
+  toggle.enabled = NO; VERIFY(!toggle.enabled);
+  toggle.enabled = YES; VERIFY(toggle.enabled);
+  [toggle setOn:YES animated:NO]; VERIFY(toggle.on);
+  [toggle setOn:NO animated:YES]; VERIFY(!toggle.on);
+  [toggle release];
+  UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Test" message:nil preferredStyle:UIAlertControllerStyleAlert];
+  [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
+  VERIFY([alert.actions.firstObject.title isEqual:@"OK"] && alert.actions.firstObject.enabled);
+  UIScrollView *scroll = [[UIScrollView alloc] initWithFrame:CGRectMake(0,0,100,100)];
+  scroll.contentSize = CGSizeMake(400,500);
+  CGRect target = CGRectMake(150,300,20,20);
+  [scroll scrollRectToVisible:target animated:NO];
+  VERIFY(CGRectContainsRect(scroll.bounds,target));
+  CGPoint offset = scroll.contentOffset;
+  [scroll scrollRectToVisible:target animated:YES];
+  VERIFY(CGPointEqualToPoint(offset,scroll.contentOffset));
+  [scroll scrollRectToVisible:CGRectMake(0,0,10,10) animated:NO];
+  VERIFY(CGPointEqualToPoint(scroll.contentOffset,CGPointZero));
+  [scroll release];
+  UIView *probe = [[UIView alloc] init];
+  [root addSubview:probe];
+  VERIFY(!probe.hasAmbiguousLayout);
+  probe.translatesAutoresizingMaskIntoConstraints = NO;
+  VERIFY(probe.hasAmbiguousLayout);
+  NSArray *probeConstraints = @[[probe.leftAnchor constraintEqualToAnchor:root.leftAnchor],
+    [probe.topAnchor constraintEqualToAnchor:root.topAnchor],
+    [probe.widthAnchor constraintEqualToConstant:20], [probe.heightAnchor constraintEqualToConstant:30]];
+  [NSLayoutConstraint activateConstraints:probeConstraints];
+  VERIFY(!probe.hasAmbiguousLayout);
+  [[probeConstraints lastObject] setActive:NO];
+  VERIFY(probe.hasAmbiguousLayout);
+  NSLayoutConstraint *lower = [probe.heightAnchor constraintGreaterThanOrEqualToConstant:30];
+  NSLayoutConstraint *upper = [probe.heightAnchor constraintLessThanOrEqualToConstant:30];
+  [NSLayoutConstraint activateConstraints:@[lower,upper]];
+  VERIFY(!probe.hasAmbiguousLayout);
+  upper.constant = 40;
+  VERIFY(probe.hasAmbiguousLayout);
+  [probe removeFromSuperview]; [probe release];
   UIView *a = [[UIView alloc] init], *b = [[UIView alloc] init];
   [a setTranslatesAutoresizingMaskIntoConstraints:NO]; [b setTranslatesAutoresizingMaskIntoConstraints:NO];
   [root addSubview:a]; [root addSubview:b];
@@ -27,6 +76,7 @@ void testUIKitLayout(void)
   VERIFY(NEAR(a.frame.origin.x,20) && NEAR(a.frame.size.width,170));
   VERIFY(NEAR(b.frame.origin.x,202) && NEAR(b.frame.size.width,178) && NEAR(b.frame.origin.y,10));
   VERIFY(left.active && [root.constraints containsObject:left]);
+  VERIFY(!a.hasAmbiguousLayout && !b.hasAmbiguousLayout);
   [root setFrame:CGRectMake(0,0,600,300)]; [root layoutIfNeeded];
   VERIFY(NEAR(a.frame.size.width,270) && NEAR(b.frame.size.width,278));
   left.constant = 30; [a layoutIfNeeded]; VERIFY(NEAR(a.frame.origin.x,30));

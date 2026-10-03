@@ -25,6 +25,7 @@ const CGFloat UIViewNoIntrinsicMetric = -1;
 - (void)_uiDestroyLayout;
 - (void)_uiRemoveAncestorConstraints;
 - (void)_uiSolveLayout;
+- (BOOL)_uiSolveLayoutCheckingView:(UIView *)query;
 - (void)_uiLayoutPass;
 @end
 
@@ -225,6 +226,13 @@ UIKIT_ANCHORS
 @end
 
 @implementation UIView (UILayout)
+- (BOOL)hasAmbiguousLayout
+{
+  UIView *root = self;
+  while ([root superview]) root = [root superview];
+  [root layoutIfNeeded];
+  return [root _uiSolveLayoutCheckingView:self];
+}
 - (void)_uiInitializeLayout
 {
   _translatesAutoresizingMaskIntoConstraints = YES;
@@ -406,6 +414,7 @@ static BOOL UILayoutFeasible(NSArray *rows, NSUInteger variables, double *soluti
   NSLayoutRelation relation;
   double priority;
   NSUInteger order;
+  BOOL frameStay;
 }
 @end
 @implementation _UILayoutEquation
@@ -450,13 +459,14 @@ static void UILayoutCollect(UIView *view, NSMutableArray *items, NSMutableArray 
 }
 
 @implementation UIView (UILayoutSolver)
-- (void)_uiSolveLayout
+- (void)_uiSolveLayout { [self _uiSolveLayoutCheckingView:nil]; }
+- (BOOL)_uiSolveLayoutCheckingView:(UIView *)query
 {
   NSMutableArray *items = [NSMutableArray array], *constraints = [NSMutableArray array];
   UILayoutCollect(self, items, constraints);
   BOOL hasGuides = NO;
   for (id item in items) if ([item isKindOfClass:[UILayoutGuide class]]) { hasGuides = YES; break; }
-  if (![constraints count] && !hasGuides) return;
+  if (![constraints count] && !hasGuides && !query) return NO;
   /* Frame-only decoration is not part of the constraint system. Keep items
      participating in constraints, intrinsic sizing or guides, plus their ancestry.
      This prevents a small constrained control from solving every label/cell in
@@ -494,6 +504,7 @@ static void UILayoutCollect(UIView *view, NSMutableArray *items, NSMutableArray 
       if (parent && c < 2) constant -= c == 0 ? [parent bounds].origin.x : [parent bounds].origin.y;
       if (systemGuide) constant = c == 0 ? insets.left : c == 1 ? insets.top : c == 2 ? -insets.left-insets.right : -insets.top-insets.bottom;
       _UILayoutEquation *e = UILayoutEquation(equations, variables, constant, NSLayoutRelationEqual, fixed || systemGuide ? 2000 : 1);
+      e->frameStay = !fixed && !systemGuide;
       double *row = [e->coefficients mutableBytes]; row[i*4+c] = 1;
       if (parent && (c < 2 || systemGuide)) row[p*4+c] -= 1;
     }
@@ -525,7 +536,7 @@ static void UILayoutCollect(UIView *view, NSMutableArray *items, NSMutableArray 
   [equations sortUsingFunction:UILayoutEquationCompare context:NULL];
   NSMutableArray *accepted = [NSMutableArray array];
   double *solution = calloc(variables, sizeof(double)), *candidate = calloc(variables, sizeof(double));
-  if (!solution || !candidate) { free(solution); free(candidate); return; }
+  if (!solution || !candidate) { free(solution); free(candidate); return NO; }
   /* Start with the current geometry. Layout and native drawing can request
      another pass after cells or decoration are added. Re-solving from zero
      needlessly rebuilds the simplex tableau for already-satisfied constraints. */
@@ -542,6 +553,7 @@ static void UILayoutCollect(UIView *view, NSMutableArray *items, NSMutableArray 
     }
   }
   for (_UILayoutEquation *e in equations) {
+    if (query && e->frameStay) continue;
     NSUInteger previous = [accepted count];
     if (e->relation <= 0) [accepted addObject:e->coefficients];
     if (e->relation >= 0) {
@@ -563,6 +575,32 @@ static void UILayoutCollect(UIView *view, NSMutableArray *items, NSMutableArray 
       if (e->priority >= 1000) NSLog(@"UIKit: breaking an unsatisfiable required layout equation");
     }
   }
+  if (query) {
+    BOOL ambiguous = NO;
+    NSNumber *index = [indices objectForKey:[NSValue valueWithPointer:query]];
+    NSNumber *parent = [indices objectForKey:[NSValue valueWithPointer:[query superview]]];
+    if (index) {
+      NSUInteger i = [index unsignedIntegerValue], p = [parent unsignedIntegerValue];
+      for (NSUInteger c = 0; c < 4 && !ambiguous; c++) {
+        double value = solution[i*4+c] - (c < 2 && parent ? solution[p*4+c] : 0);
+        /* A second feasible frame differing in any coordinate proves ambiguity.
+           Relative positions avoid treating a moving ancestor as ambiguity in
+           a child's otherwise fully specified frame. */
+        for (NSInteger sign = -1; sign <= 1 && !ambiguous; sign += 2) {
+          NSMutableData *probe = [NSMutableData dataWithLength:(variables+1)*sizeof(double)];
+          double *row = [probe mutableBytes];
+          row[i*4+c] = sign;
+          if (c < 2 && parent) row[p*4+c] -= sign;
+          row[variables] = sign*value - 1e-5;
+          [accepted addObject:probe];
+          ambiguous = UILayoutFeasible(accepted, variables, candidate);
+          [accepted removeLastObject];
+        }
+      }
+    }
+    free(solution); free(candidate);
+    return ambiguous;
+  }
   for (NSUInteger i = 1; i < [items count]; i++) {
     id item = [items objectAtIndex:i]; BOOL guide = [item isKindOfClass:[UILayoutGuide class]];
     UIView *parent = guide ? [(UILayoutGuide *)item owningView] : [(UIView *)item superview];
@@ -581,6 +619,7 @@ static void UILayoutCollect(UIView *view, NSMutableArray *items, NSMutableArray 
     }
   }
   free(solution); free(candidate);
+  return NO;
 }
 - (void)_uiLayoutPass
 {

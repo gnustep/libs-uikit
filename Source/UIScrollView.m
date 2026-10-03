@@ -109,6 +109,22 @@
   [self _clipBoundsChanged:nil];
 }
 - (void)setContentOffset:(CGPoint)offset animated:(BOOL)animated { [self setContentOffset:offset]; }
+- (void)scrollRectToVisible:(CGRect)rect animated:(BOOL)animated
+{
+  CGRect visible = [self bounds];
+  CGPoint offset = visible.origin;
+  /* Move only enough to reveal the requested rectangle. Oversized rectangles
+     already covering the viewport need no movement on that axis. */
+  if (CGRectGetMinX(rect) < CGRectGetMinX(visible)) offset.x = CGRectGetMinX(rect);
+  else if (CGRectGetMaxX(rect) > CGRectGetMaxX(visible))
+    offset.x = MIN(CGRectGetMinX(rect), CGRectGetMaxX(rect)-visible.size.width);
+  if (CGRectGetMinY(rect) < CGRectGetMinY(visible)) offset.y = CGRectGetMinY(rect);
+  else if (CGRectGetMaxY(rect) > CGRectGetMaxY(visible))
+    offset.y = MIN(CGRectGetMinY(rect), CGRectGetMaxY(rect)-visible.size.height);
+  if (CGRectGetMinX(rect) <= CGRectGetMinX(visible) && CGRectGetMaxX(rect) >= CGRectGetMaxX(visible)) offset.x = visible.origin.x;
+  if (CGRectGetMinY(rect) <= CGRectGetMinY(visible) && CGRectGetMaxY(rect) >= CGRectGetMaxY(visible)) offset.y = visible.origin.y;
+  [self setContentOffset:offset animated:animated];
+}
 - (void)_updateVisibleContent {}
 - (void)_clipBoundsChanged:(NSNotification *)notification
 {

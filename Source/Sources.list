@@ -63,3 +63,4 @@ UIGestureRecognizer.m
 UILayout.m
 UITableViewController.m
 UICollectionViewController.m
+UIGeometry.m

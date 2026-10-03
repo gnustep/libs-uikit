@@ -28,7 +28,7 @@ DEFINE_BLOCK_TYPE(UIAlertActionHandler, void, UIAlertAction *);
 + (instancetype)alertControllerWithTitle:(NSString *)title message:(NSString *)message preferredStyle:(UIAlertControllerStyle)style;
 @property(nonatomic, copy) NSString *message;
 @property(nonatomic, readonly) UIAlertControllerStyle preferredStyle;
-@property(nonatomic, readonly) NSArray *actions;
+@property(nonatomic, readonly) NSArray<UIAlertAction *> *actions;
 - (void)addAction:(UIAlertAction *)action;
 @end
 #endif
