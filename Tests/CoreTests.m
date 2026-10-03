@@ -292,11 +292,43 @@ extern void testUIKitPlayground(void);
 extern void testUIKitCatalog(void);
 extern void testUIKitExtendedCatalog(void);
 
+static void testScreenBounds(void)
+{
+  NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+  NSArray *searchList = [[defaults searchList] copy];
+  NSDictionary *arguments = [[defaults volatileDomainForName:NSArgumentDomain] copy];
+  @try {
+    // Isolate the preference without changing the user's persistent defaults.
+    [defaults setSearchList:@[NSArgumentDomain]];
+    [defaults removeVolatileDomainForName:NSArgumentDomain];
+    [defaults setVolatileDomain:@{} forName:NSArgumentDomain];
+    UIScreen *screen = [UIScreen mainScreen];
+#if defined(__ANDROID__)
+    CGRect expected = [[NSScreen mainScreen] frame];
+#else
+    CGRect expected = CGRectMake(0, 0, 1366, 1024);
+#endif
+    CHECK(CGRectEqualToRect(screen.bounds, expected));
+    [defaults removeVolatileDomainForName:NSArgumentDomain];
+    [defaults setVolatileDomain:@{@"GSUIKitUseFullScreenSize": @"YES"} forName:NSArgumentDomain];
+    CHECK(CGRectEqualToRect(screen.bounds, [[NSScreen mainScreen] frame]));
+    [defaults removeVolatileDomainForName:NSArgumentDomain];
+    [defaults setVolatileDomain:@{@"GSUIKitUseFullScreenSize": @"NO"} forName:NSArgumentDomain];
+    CHECK(CGRectEqualToRect(screen.bounds, expected));
+  } @finally {
+    [defaults removeVolatileDomainForName:NSArgumentDomain];
+    if (arguments) [defaults setVolatileDomain:arguments forName:NSArgumentDomain];
+    [defaults setSearchList:searchList];
+    [arguments release]; [searchList release];
+  }
+}
+
 int main(void)
 {
   NSAutoreleasePool *pool = [NSAutoreleasePool new];
   [NSApplication sharedApplication];
   @try {
+    testScreenBounds();
     UIKitRunPublicContract();
     testUIKitLayout();
     testUIKitEditingAndControllers();

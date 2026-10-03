@@ -31,6 +31,14 @@ explicit backend extension.
 
 ## Evidence and limits
 
+On desktop platforms, `UIScreen.mainScreen.bounds` defaults to `(0, 0, 1366,
+1024)`, a large iPad's landscape size in logical points. Set the user default
+`GSUIKitUseFullScreenSize` to `YES` to report the native `NSScreen` frame instead.
+For example, `defaults write NSGlobalDomain GSUIKitUseFullScreenSize YES` enables
+this for all GNUstep UIKit apps; setting it to `NO` restores the iPad-sized default.
+Android continues to report its native screen bounds. This controls the size
+reported to apps; it does not resize windows that are already open.
+
 `Tests/UIKitContract.m` imports only UIKit and exercises inheritance, application
 hierarchy, hidden native children, responder actions, scroll coordinates,
 hit testing, ordering, reparenting and text focus. The separate desktop test host
