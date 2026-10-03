@@ -84,6 +84,7 @@ UIKitNSColorFromRGBA(CGFloat red, CGFloat green, CGFloat blue, CGFloat alpha)
 {
 @public
   UIView *owner; /* non-owning; UIView owns the peer */
+  NSTrackingRectTag _trackingRect;
 }
 @end
 @interface _UIKitWindowPeer : NSWindow
@@ -159,4 +160,22 @@ static inline GNUstepNSTextAlignment UIKitNativeTextAlignment(NSTextAlignment al
     default: return NSLeftTextAlignment;
   }
 }
+
+@interface UIMenu (UIKitNativeMenu)
+- (NSMenu *)_nativeMenu;
+- (void)_presentInView:(UIView *)view point:(CGPoint)point event:(NSEvent *)event;
+@end
+@interface UIContextMenuInteraction (UIKitNativeMenu)
+- (void)_presentAtPoint:(CGPoint)point event:(NSEvent *)event;
+@end
+@interface UIView (UIKitContextMenu)
+- (void)_contextMenu:(NSEvent *)event;
+@end
+
+@interface UIView (UIKitPointerEvents)
+- (void)_hoverEvent:(NSEvent *)event state:(UIGestureRecognizerState)state;
+- (BOOL)_beginNativeDrag:(NSEvent *)event;
+- (NSUInteger)_nativeDrop:(id<NSDraggingInfo>)info perform:(BOOL)perform;
+@end
+
 #endif

@@ -1,6 +1,18 @@
 #import "UIKitPrivate.h"
 
 @implementation _UIKitViewPeer
+- (void)_updateTrackingRect {
+  if (_trackingRect) { [self removeTrackingRect:_trackingRect]; _trackingRect=0; }
+  if (self.window && owner) _trackingRect=[self addTrackingRect:self.bounds owner:self userData:NULL assumeInside:NO];
+}
+- (void)viewDidMoveToWindow { [super viewDidMoveToWindow]; [[self window] setAcceptsMouseMovedEvents:YES]; [self _updateTrackingRect]; }
+- (void)mouseEntered:(NSEvent *)event { [owner _hoverEvent:event state:UIGestureRecognizerStateBegan]; }
+- (void)mouseMoved:(NSEvent *)event { [owner _hoverEvent:event state:UIGestureRecognizerStateChanged]; }
+- (void)mouseExited:(NSEvent *)event { [owner _hoverEvent:event state:UIGestureRecognizerStateEnded]; }
+- (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)info { return [owner _nativeDrop:info perform:NO]; }
+- (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)info { return [owner _nativeDrop:info perform:NO]; }
+- (BOOL)prepareForDragOperation:(id<NSDraggingInfo>)info { return [owner _nativeDrop:info perform:NO] != NSDragOperationNone; }
+- (BOOL)performDragOperation:(id<NSDraggingInfo>)info { return [owner _nativeDrop:info perform:YES] != NSDragOperationNone; }
 - (BOOL)isFlipped { return YES; }
 - (BOOL)acceptsFirstResponder { return [owner canBecomeFirstResponder]; }
 - (BOOL)becomeFirstResponder { return YES; }
@@ -9,6 +21,7 @@
 {
   [super setFrame:frame];
   if (owner) [owner _nativeFrameChanged:frame];
+  [self _updateTrackingRect];
 }
 - (BOOL)wantsDefaultClipping { return [owner clipsToBounds]; }
 - (void)drawRect:(NSRect)rect { [owner layoutIfNeeded]; [owner drawRect:rect]; }
@@ -18,12 +31,16 @@
   local = [[owner _nativeCoordinateView] convertPoint:local fromView:self];
   UIView *hit = [owner hitTest:local withEvent:nil];
   if (!hit) return nil;
+  for (id interaction in hit.interactions)
+    if ([interaction isKindOfClass:[UIContextMenuInteraction class]]) return [hit _nativeView];
   NSView *nativeHit = [super hitTest:point];
   if ([nativeHit isDescendantOf:[hit _nativeView]]) return nativeHit;
   return [hit _nativeView];
 }
+- (void)rightMouseDown:(NSEvent *)event {}
+- (void)rightMouseUp:(NSEvent *)event { [owner _contextMenu:event]; }
 - (void)mouseDown:(NSEvent *)event { [owner mouseDown:event]; }
-- (void)mouseDragged:(NSEvent *)event { [owner mouseDragged:event]; }
+- (void)mouseDragged:(NSEvent *)event { if (![owner _beginNativeDrag:event]) [owner mouseDragged:event]; }
 - (void)mouseUp:(NSEvent *)event { [owner mouseUp:event]; }
 @end
 
@@ -41,6 +58,22 @@
 @end
 
 @implementation UIView
+- (NSArray *)interactions { return [[_interactions copy] autorelease] ?: @[]; }
+- (void)addInteraction:(id<UIInteraction>)interaction {
+  if (!interaction || [_interactions containsObject:interaction]) return;
+  if (!_interactions) _interactions=[NSMutableArray new];
+  [[interaction retain] autorelease]; [[interaction view] removeInteraction:interaction];
+  [interaction willMoveToView:self]; [_interactions addObject:interaction]; [interaction didMoveToView:self];
+}
+- (void)removeInteraction:(id<UIInteraction>)interaction {
+  if (![_interactions containsObject:interaction]) return;
+  [[interaction retain] autorelease]; [interaction willMoveToView:nil]; [_interactions removeObjectIdenticalTo:interaction]; [interaction didMoveToView:nil];
+}
+- (void)_contextMenu:(NSEvent *)event {
+  CGPoint point=[_nativeView convertPoint:event.locationInWindow fromView:nil];
+  for (id interaction in self.interactions) if ([interaction isKindOfClass:[UIContextMenuInteraction class]])
+    [interaction _presentAtPoint:point event:nil];
+}
 - (UIViewLayer *)layer { if (!_layer) _layer = [[UIViewLayer alloc] _initWithView:self]; return _layer; }
 @synthesize accessibilityHint = _accessibilityHint, isAccessibilityElement = _isAccessibilityElement;
 @synthesize accessibilityLabel = _accessibilityLabel, accessibilityIdentifier = _accessibilityIdentifier;
@@ -62,6 +95,8 @@
 }
 - (void)dealloc
 {
+  for (id<UIInteraction> interaction in _interactions) { [interaction willMoveToView:nil]; [interaction didMoveToView:nil]; }
+  [_interactions release];
   [_layer _detach]; [_layer release];
   [_accessibilityHint release];
   [_accessibilityLabel release]; [_accessibilityIdentifier release];

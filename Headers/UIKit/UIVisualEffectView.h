@@ -9,7 +9,7 @@ enum { UIBlurEffectStyleExtraLight = 0, UIBlurEffectStyleLight = 1, UIBlurEffect
 + (UIBlurEffect *)effectWithStyle:(UIBlurEffectStyle)style;
 @end
 @interface UIVisualEffectView : UIView
-{ UIVisualEffect *_effect; UIView *_contentView; }
+{ UIVisualEffect *_effect; UIView *_contentView; BOOL _glassHovered; }
 - (id)initWithEffect:(UIVisualEffect *)effect;
 @property(nonatomic, retain) UIVisualEffect *effect;
 @property(nonatomic, readonly) UIView *contentView;

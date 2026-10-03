@@ -49,6 +49,12 @@ UIVisualEffectView.m
 UIContainerControllers.m
 UIPresentationControllers.m
 UIAdditionalGestures.m
+UIExtraControls.m
+UIContentViews.m
+UIMenus.m
+UISystemInterfaces.m
+UIGlassEffect.m
+UIPointerAndDrag.m
 UIScreen.m
 UIDevice.m
 UINib.m

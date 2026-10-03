@@ -22,6 +22,7 @@ UIKIT_FIELD_EDITS
 @end
 
 @implementation UITextField
+- (void)paste:(id)sender { if (![self isEnabled]) return; [self becomeFirstResponder]; [[_textField currentEditor] paste:sender]; }
 - (UITextBorderStyle)borderStyle { return _borderStyle; }
 - (void)setBorderStyle:(UITextBorderStyle)style {
   _borderStyle = style; [_textField setBordered:style != UITextBorderStyleNone];

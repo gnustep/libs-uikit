@@ -2,6 +2,7 @@
 #define GNUSTEP_UIKIT_UIVIEW_H
 
 #import <UIKit/UIResponder.h>
+#import <UIKit/UIInteraction.h>
 #import <UIKit/UIViewLayer.h>
 #import <UIKit/UILayoutGuide.h>
 extern const CGFloat UIViewNoIntrinsicMetric;
@@ -27,6 +28,7 @@ extern const CGFloat UIViewNoIntrinsicMetric;
   UITouch *_activeTouch;
   id _owningViewController;
   UIViewLayer *_layer;
+  NSMutableArray *_interactions;
   id _nativeView;
   CGRect _frame, _bounds;
   NSMutableArray *_subviews;
@@ -99,6 +101,9 @@ extern const CGFloat UIViewNoIntrinsicMetric;
 - (void)setNeedsLayout;
 - (void)layoutIfNeeded;
 @property(nonatomic, readonly) UIViewLayer *layer;
+@property(nonatomic, readonly, copy) NSArray *interactions;
+- (void)addInteraction:(id<UIInteraction>)interaction;
+- (void)removeInteraction:(id<UIInteraction>)interaction;
 - (void)layoutSubviews;
 - (CGSize)sizeThatFits:(CGSize)size;
 - (void)sizeToFit;

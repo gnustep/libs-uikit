@@ -1,0 +1,4 @@
+#ifndef GNUSTEP_UIKIT_UIMENUELEMENT_H
+#define GNUSTEP_UIKIT_UIMENUELEMENT_H
+#import <UIKit/UIMenu.h>
+#endif

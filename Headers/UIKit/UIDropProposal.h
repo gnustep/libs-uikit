@@ -1,0 +1,4 @@
+#ifndef GNUSTEP_UIKIT_UIDROPPROPOSAL_H
+#define GNUSTEP_UIKIT_UIDROPPROPOSAL_H
+#import <UIKit/UIDragInteraction.h>
+#endif

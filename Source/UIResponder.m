@@ -1,5 +1,6 @@
 #import "UIKitPrivate.h"
 @implementation UIResponder
+- (void)paste:(id)sender { id native=[self _nativeResponder]; if ([native respondsToSelector:@selector(paste:)]) [native paste:sender]; }
 - (UIResponder *)nextResponder { return nil; }
 - (UIWindow *)_responderWindow { return [[self nextResponder] _responderWindow]; }
 - (NSResponder *)_nativeResponder { return nil; }

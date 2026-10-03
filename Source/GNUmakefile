@@ -97,6 +97,42 @@ UIKit_HEADER_FILES = \
 	UIVisualEffect.h \
 	UICalendarSelectionSingleDate.h \
 	UIFontPickerViewControllerConfiguration.h \
+	UIColorWell.h \
+	UISearchTextField.h \
+	UIPasteboard.h \
+	UIPasteControl.h \
+	UIContentConfiguration.h \
+	UIListContentConfiguration.h \
+	UIContentUnavailableConfiguration.h \
+	UIContentUnavailableView.h \
+	UICollectionViewListCell.h \
+	UITableViewHeaderFooterView.h \
+	UIInteraction.h \
+	UIMenu.h \
+	UIAction.h \
+	UICommand.h \
+	UIMenuElement.h \
+	UIContextMenuInteraction.h \
+	UIEditMenuInteraction.h \
+	UIContextMenuConfiguration.h \
+	UIEditMenuConfiguration.h \
+	UIDocumentPickerViewController.h \
+	UIDocumentBrowserViewController.h \
+	UIImagePickerController.h \
+	UIReferenceLibraryViewController.h \
+	UITextFormattingViewController.h \
+	UITextFormattingViewControllerConfiguration.h \
+	UITextFormattingViewControllerChangeValue.h \
+	UIGlassEffect.h \
+	UIGlassContainerEffect.h \
+	UIBackgroundExtensionView.h \
+	UIHoverGestureRecognizer.h \
+	UIToolTipInteraction.h \
+	UIPointerInteraction.h \
+	UIDragInteraction.h \
+	UIDragItem.h \
+	UIDropInteraction.h \
+	UIDropProposal.h \
 	UIScreen.h \
 	UIDevice.h \
 	UINib.h \

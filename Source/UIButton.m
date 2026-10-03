@@ -8,6 +8,7 @@
 - (void)setNumberOfLines:(NSInteger)lines { [super setNumberOfLines:lines]; [[button cell] setWraps:lines != 1]; }
 @end
 @implementation UIButton
+@synthesize menu=_menu, showsMenuAsPrimaryAction=_showsMenuAsPrimaryAction;
 - (UILabel *)titleLabel { return _titleLabel; }
 + (UIButton *)buttonWithType:(int)buttonType
 {
@@ -36,6 +37,7 @@
 {
   ((_UIKitButtonTitleLabel *)_titleLabel)->button = nil;
   [_titleLabel release];
+  [_menu release];
   [_titles release];
   [_button release];
   [super dealloc];
@@ -48,7 +50,10 @@
 {
   [super removeTarget:target action:action forControlEvents:events];
 }
-- (void)_uiButtonPressed:(id)sender { [self sendActionsForControlEvents:UIControlEventTouchUpInside]; }
+- (void)_uiButtonPressed:(id)sender {
+  if (_menu && _showsMenuAsPrimaryAction) [_menu _presentInView:self point:CGPointMake(0,self.bounds.size.height) event:[NSApp currentEvent]];
+  else [self sendActionsForControlEvents:UIControlEventTouchUpInside];
+}
 - (void)_updateTitle
 {
   UIControlState state = (_enabled ? 0 : UIControlStateDisabled) | (_selected ? UIControlStateSelected : 0) | (_highlighted ? UIControlStateHighlighted : 0);

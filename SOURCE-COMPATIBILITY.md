@@ -152,3 +152,48 @@ Known limits of this subset:
 - Refreshing is triggered by upward wheel input at the top of a table; it does not
   implement elastic touch scrolling. Programmatic `beginRefreshing` does not emit
   a value-change action.
+
+### Extended catalog examples
+
+The extended catalog adds 24 live entries (73 total in UIKitTest). The public
+headers and both framework build systems now include these implementations:
+
+- Color wells, standalone search fields and paste controls bridge native color,
+  search and clipboard controls. Paste inserts into the target's selection.
+- List content configurations render a title, subtitle and optional image;
+  collection list cells and content-unavailable views replace that content when
+  their configuration changes. Header/footer views expose reusable labeled content.
+- Button, context and edit menus render native menus. Actions run copied blocks;
+  commands use the responder chain, including the originating view's controller.
+  Disabled/hidden states and nested menus are supported. Context menus open on
+  desktop right-click; preview controllers and touch context-menu gestures are
+  outside this subset.
+- Document pickers/browser use native file panels and return file URLs. The browser
+  is a file-opening interface, not a cloud/document-provider manager. Import mode
+  currently returns the selected URL without copying it into a sandbox; export,
+  security-scoped access and provider coordination are not implemented.
+- Image selection loads an image file and delivers it through the picker delegate.
+  Camera capture and an OS photo-library database are unavailable.
+- Reference lookup uses a small, original offline technical glossary. Applications
+  can extend it with a word-to-definition `UIKitDictionary.plist` in their bundle.
+  It is not a comprehensive dictionary service. Unknown terms report no definition.
+- Text formatting controls change point size and bold face and deliver delegate
+  changes. Paragraph, list, color and full font-family formatting are not covered.
+- Glass effects blur snapshots of sibling content, tint them and draw a rounded
+  highlight. Interactive glass brightens on pointer hover. Background extension
+  softens and stretches a snapshot of its content. These are desktop approximations,
+  not Apple's compositor, refraction or animated glass merging. Container spacing
+  is metadata; morphing between grouped glass shapes is not implemented.
+- Hover recognizers receive mouse-enter/move/exit events; pointer interactions
+  select the hand cursor, and tooltip interactions use native help bubbles.
+  Custom pointer regions/styles are not implemented.
+- Drag/drop transfers local strings and native text pasteboard data. GNUstep Base's
+  `NSItemProvider` is currently a stub, so generic provider loading is unavailable;
+  the GNUstep example supplies `UIDragItem.localObject`. Other payload types and
+  drop previews are not implemented.
+
+`Tests/ExtendedCatalogTests.m` covers native control actions, paste insertion,
+configuration replacement/copying, menu action dispatch and states, picker result
+callbacks, child-controller dismissal, formatting changes, hover transitions,
+tooltip attachment and native text drops. The external catalog smoke test also
+loads/renders every live entry and opens controller examples.

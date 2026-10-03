@@ -66,6 +66,9 @@
   if (!_presentedViewController && _presentingViewController) {
     [_presentingViewController dismissViewControllerAnimated:animated completion:completion]; return;
   }
+  if (!_presentedViewController && _parentViewController) {
+    [_parentViewController dismissViewControllerAnimated:animated completion:completion]; return;
+  }
   if (_presentedViewController) {
     if (_presentedViewController->_presentedViewController)
       [_presentedViewController dismissViewControllerAnimated:animated completion:nil];

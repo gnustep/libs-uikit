@@ -3,6 +3,7 @@
 #import <UIKit/UIKitTypes.h>
 @class UIEvent;
 @interface UIResponder : NSObject
+- (void)paste:(id)sender;
 - (BOOL)canBecomeFirstResponder;
 - (BOOL)canResignFirstResponder;
 - (BOOL)isFirstResponder;
