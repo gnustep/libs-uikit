@@ -10,8 +10,21 @@
 - (CGSize)intrinsicContentSize { return CGSizeMake(90, 25); }
 @end
 
+static NSUInteger detachedLayoutsReleased;
+@interface DetachedLayoutProbe : UIView @end
+@implementation DetachedLayoutProbe
+- (void)dealloc { detachedLayoutsReleased++; [super dealloc]; }
+@end
+
 void testUIKitLayout(void)
 {
+  detachedLayoutsReleased = 0;
+  for (NSUInteger i = 0; i < 20; i++) {
+    DetachedLayoutProbe *detached = [[DetachedLayoutProbe alloc] init];
+    [detached setNeedsLayout];
+    [detached release];
+  }
+  VERIFY(detachedLayoutsReleased == 20);
   UIView *root = [[UIView alloc] initWithFrame:CGRectMake(0,0,400,300)];
   CGSize boxed = [NSValue valueWithCGSize:CGSizeMake(37,19)].CGSizeValue;
   VERIFY(CGSizeEqualToSize(boxed, CGSizeMake(37,19)));
@@ -43,6 +56,17 @@ void testUIKitLayout(void)
   [scroll scrollRectToVisible:CGRectMake(0,0,10,10) animated:NO];
   VERIFY(CGPointEqualToPoint(scroll.contentOffset,CGPointZero));
   [scroll release];
+  UIButton *minimumButton = [UIButton buttonWithType:UIButtonTypeSystem];
+  [minimumButton setTitle:@"Minimum height" forState:UIControlStateNormal];
+  minimumButton.translatesAutoresizingMaskIntoConstraints = NO;
+  [root addSubview:minimumButton];
+  [NSLayoutConstraint activateConstraints:@[[minimumButton.leftAnchor constraintEqualToAnchor:root.leftAnchor],
+    [minimumButton.topAnchor constraintEqualToAnchor:root.topAnchor],
+    [minimumButton.widthAnchor constraintEqualToConstant:200],
+    [minimumButton.heightAnchor constraintGreaterThanOrEqualToConstant:100]]];
+  VERIFY(!minimumButton.hasAmbiguousLayout);
+  VERIFY(NEAR(minimumButton.frame.size.height,100));
+  [minimumButton removeFromSuperview];
   UIView *probe = [[UIView alloc] init];
   [root addSubview:probe];
   VERIFY(!probe.hasAmbiguousLayout);

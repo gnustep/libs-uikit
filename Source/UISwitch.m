@@ -23,7 +23,7 @@
   [super dealloc];
 }
 - (void)_uiSwitchChanged:(id)sender { [self sendActionsForControlEvents:UIControlEventValueChanged]; }
-- (BOOL)isOn { return [(NSButton *)_switchButton state] == NSOnState; }
+- (BOOL)isOn { return [(NSButtonCell *)[(NSButton *)_switchButton cell] state] == NSOnState; }
 - (void)setOn:(BOOL)on { [_switchButton setState:(on ? NSOnState : NSOffState)]; }
 - (void)setOn:(BOOL)on animated:(BOOL)animated { [self setOn:on]; }
 - (void)setEnabled:(BOOL)enabled

@@ -3,6 +3,8 @@
 
 #import <UIKit/UIResponder.h>
 
+@protocol UIViewControllerTransitionCoordinator;
+
 @class UIView, UIWindow, UINavigationController, UINavigationItem, UITabBarItem, UIPopoverPresentationController;
 typedef NSInteger UIModalPresentationStyle;
 enum { UIModalPresentationFullScreen = 0, UIModalPresentationPageSheet = 1, UIModalPresentationFormSheet = 2, UIModalPresentationPopover = 7, UIModalPresentationAutomatic = -2 };
@@ -29,6 +31,8 @@ DEFINE_BLOCK_TYPE_NO_ARGS(UIViewControllerCompletion, void);
   BOOL _appearanceAnimated;
   BOOL _visible;
 }
+/** Synchronous desktop transitions have no active coordinator. */
+@property(nonatomic, readonly) id<UIViewControllerTransitionCoordinator> transitionCoordinator;
 @property(nonatomic, readonly) UINavigationItem *navigationItem;
 @property(nonatomic, retain) UITabBarItem *tabBarItem;
 @property(nonatomic, readonly) UIPopoverPresentationController *popoverPresentationController;

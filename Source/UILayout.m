@@ -341,7 +341,7 @@ UIKIT_ANCHORS
 
 /* A feasibility tableau for A*x <= b, with each unrestricted coordinate split
    into positive and negative variables. Phase I removes the artificial variable;
-   no objective is needed because priorities are admitted in descending order. */
+   Phase II minimizes violations of optional equations in priority order. */
 typedef struct { NSUInteger rows, columns; double *cells; NSInteger *basic, *nonbasic; } UILayoutTableau;
 #define UI_CELL(t,r,c) ((t)->cells[(r)*((t)->columns+2)+(c)])
 static void UILayoutPivot(UILayoutTableau *t, NSUInteger row, NSUInteger column)
@@ -355,14 +355,14 @@ static void UILayoutPivot(UILayoutTableau *t, NSUInteger row, NSUInteger column)
   UI_CELL(t,row,column) = 1/pivot;
   NSInteger variable = t->basic[row]; t->basic[row] = t->nonbasic[column]; t->nonbasic[column] = variable;
 }
-static BOOL UILayoutPhaseOne(UILayoutTableau *t)
+static BOOL UILayoutSimplex(UILayoutTableau *t, NSUInteger objective)
 {
   const double epsilon = 1e-8;
   for (NSUInteger iteration = 0; iteration < 10000; iteration++) {
     NSInteger entering = -1;
     /* Bland's rule prevents cycling on degenerate constraints. */
     for (NSUInteger c = 0; c <= t->columns; c++)
-      if (UI_CELL(t,t->rows+1,c) < -epsilon &&
+      if (t->nonbasic[c] != -1 && UI_CELL(t,objective,c) < -epsilon &&
           (entering < 0 || t->nonbasic[c] < t->nonbasic[entering])) entering = c;
     if (entering < 0) return YES;
     NSInteger leaving = -1;
@@ -378,7 +378,7 @@ static BOOL UILayoutPhaseOne(UILayoutTableau *t)
   }
   return NO;
 }
-static BOOL UILayoutFeasible(NSArray *rows, NSUInteger variables, double *solution)
+static BOOL UILayoutOptimize(NSArray *rows, NSUInteger variables, double *solution, const double *objective)
 {
   UILayoutTableau t = { [rows count], variables*2, NULL, NULL, NULL };
   t.cells = calloc((t.rows+2)*(t.columns+2), sizeof(double));
@@ -393,10 +393,21 @@ static BOOL UILayoutFeasible(NSArray *rows, NSUInteger variables, double *soluti
   }
   for (NSUInteger c = 0; c < t.columns; c++) t.nonbasic[c] = c;
   t.nonbasic[t.columns] = -1; UI_CELL(&t,t.rows+1,t.columns) = 1;
+  if (objective) for (NSUInteger c = 0; c < variables; c++) {
+    UI_CELL(&t,t.rows,c*2) = objective[c]; UI_CELL(&t,t.rows,c*2+1) = -objective[c];
+  }
   BOOL feasible = YES;
   if (lowest >= 0 && UI_CELL(&t,lowest,t.columns+1) < -1e-8) {
     UILayoutPivot(&t, lowest, t.columns);
-    feasible = UILayoutPhaseOne(&t) && fabs(UI_CELL(&t,t.rows+1,t.columns+1)) < 1e-7;
+    feasible = UILayoutSimplex(&t, t.rows+1) && fabs(UI_CELL(&t,t.rows+1,t.columns+1)) < 1e-7;
+  }
+  if (feasible && objective) {
+    for (NSUInteger r = 0; r < t.rows; r++) if (t.basic[r] == -1) {
+      for (NSUInteger c = 0; c < t.columns; c++) if (fabs(UI_CELL(&t,r,c)) > 1e-8) {
+        UILayoutPivot(&t, r, c); break;
+      }
+    }
+    feasible = UILayoutSimplex(&t, t.rows);
   }
   if (feasible) {
     memset(solution, 0, variables*sizeof(double));
@@ -406,6 +417,9 @@ static BOOL UILayoutFeasible(NSArray *rows, NSUInteger variables, double *soluti
   }
   free(t.cells); free(t.basic); free(t.nonbasic); return feasible;
 }
+
+static BOOL UILayoutFeasible(NSArray *rows, NSUInteger variables, double *solution)
+{ return UILayoutOptimize(rows, variables, solution, NULL); }
 
 @interface _UILayoutEquation : NSObject
 {
@@ -572,6 +586,19 @@ static void UILayoutCollect(UIView *view, NSMutableArray *items, NSMutableArray 
     if (UILayoutFeasible(accepted, variables, candidate)) memcpy(solution, candidate, variables*sizeof(double));
     else {
       [accepted removeObjectsInRange:NSMakeRange(previous, [accepted count]-previous)];
+      /* Preserve the best attainable optional value instead of discarding
+         its preference when a stronger bound prevents exact satisfaction. */
+      if (e->priority < 1000 && !e->frameStay) {
+        NSMutableData *bound = [[e->coefficients mutableCopy] autorelease];
+        double *row = [bound mutableBytes];
+        if (residual < 0) for (NSUInteger c = 0; c <= variables; c++) row[c] = -row[c];
+        if (UILayoutOptimize(accepted, variables, candidate, row)) {
+          row[variables] = 0;
+          for (NSUInteger c = 0; c < variables; c++) row[variables] += row[c]*candidate[c];
+          [accepted addObject:bound];
+          memcpy(solution, candidate, variables*sizeof(double));
+        }
+      }
       if (e->priority >= 1000) NSLog(@"UIKit: breaking an unsatisfiable required layout equation");
     }
   }
@@ -607,6 +634,11 @@ static void UILayoutCollect(UIView *view, NSMutableArray *items, NSMutableArray 
     NSUInteger p = [[indices objectForKey:[NSValue valueWithPointer:parent]] unsignedIntegerValue];
     CGRect frame = CGRectMake(solution[i*4]-solution[p*4]+[parent bounds].origin.x,
       solution[i*4+1]-solution[p*4+1]+[parent bounds].origin.y, MAX(0,solution[i*4+2]), MAX(0,solution[i*4+3]));
+    /* Remove simplex roundoff at integral coordinates so native clipping
+       and exact rectangle containment agree at shared edges. */
+    CGFloat *components[] = { &frame.origin.x, &frame.origin.y, &frame.size.width, &frame.size.height };
+    for (NSUInteger c = 0; c < 4; c++)
+      if (fabs(*components[c] - round(*components[c])) < 1e-7) *components[c] = round(*components[c]);
     if (guide) {
       if (!NSEqualRects([item layoutFrame], frame)) [parent setNeedsLayout];
       [item _setLayoutFrame:frame];

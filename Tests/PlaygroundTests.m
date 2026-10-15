@@ -65,6 +65,15 @@ void testUIKitPlayground(void)
   CHECK(fabs(stack.frame.origin.x-24) < 0.001 && stack.frame.size.height > 400);
   CHECK(fabs(table.frame.size.height-176) < 0.001);
   CHECK(fabs(scroll.contentSize.height-(NSMaxY(stack.frame)+24)) < 0.001);
+  for (NSUInteger i = 0; i < 2; i++) {
+    root.frame = i ? CGRectMake(0,0,852,393) : CGRectMake(0,0,320,568);
+    [root layoutIfNeeded];
+    UIView *bottom = [stack.arrangedSubviews lastObject];
+    CGRect target = [bottom convertRect:bottom.bounds toView:scroll];
+    [scroll scrollRectToVisible:target animated:NO];
+    CHECK(scroll.contentOffset.y > 0 && CGRectContainsRect(scroll.bounds,target));
+    scroll.contentOffset = CGPointZero;
+  }
   root.frame = CGRectMake(0,0,600,400); [root layoutIfNeeded];
   CHECK(fabs(stack.frame.size.width-552) < 0.001);
   CHECK(fabs(scroll.frameLayoutGuide.layoutFrame.size.width-600) < 0.001);
@@ -102,9 +111,13 @@ void testUIKitPlayground(void)
   [owner presentViewController:alert animated:NO completion:NULL];
 #endif
   CHECK(owner.presentedViewController == alert && alert.presentingViewController == owner);
+  CHECK(owner.transitionCoordinator == nil && alert.transitionCoordinator == nil);
+  CHECK([[NSPredicate predicateWithFormat:@"presentedViewController != nil AND presentedViewController.transitionCoordinator == nil"]
+    evaluateWithObject:owner]);
   for (UIView *view in alert.view.subviews)
     if ([view isKindOfClass:[UIButton class]]) [(UIButton *)view sendActionsForControlEvents:UIControlEventTouchUpInside];
   CHECK(owner.presentedViewController == nil && alert.presentingViewController == nil);
+  CHECK(owner.transitionCoordinator == nil && alert.transitionCoordinator == nil);
 #if __has_feature(blocks)
   CHECK(callbacks == 2);
 #endif

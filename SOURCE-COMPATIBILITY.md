@@ -205,3 +205,15 @@ configuration replacement/copying, menu action dispatch and states, picker resul
 callbacks, child-controller dismissal, formatting changes, hover transitions,
 tooltip attachment and native text drops. The external catalog smoke test also
 loads/renders every live entry and opens controller examples.
+
+View-controller presentation and navigation currently complete synchronously.
+`UIViewController.transitionCoordinator` is available and returns `nil`; animated
+transition coordination is not implemented. Predicate-based presentation and
+dismissal checks can query the property on any view controller.
+
+Layout resolves conflicting optional sizing preferences to their nearest feasible
+value (for example, an intrinsic button height below a required minimum). Equal
+priority preferences still use declaration order rather than a full UIKit solver.
+Integral frame coordinates are normalized within solver tolerance to keep scroll
+visibility checks consistent at shared edges. Desktop regressions cover minimum
+button heights and bottom-control scrolling after narrow/landscape resizing.

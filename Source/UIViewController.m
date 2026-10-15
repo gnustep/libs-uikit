@@ -46,6 +46,12 @@
     if ([parent isKindOfClass:[UINavigationController class]]) return (UINavigationController *)parent;
   return nil;
 }
+- (id<UIViewControllerTransitionCoordinator>)transitionCoordinator
+{
+  // Presentation and navigation complete synchronously in this backend.
+  return nil;
+}
+
 - (UIViewController *)presentedViewController { return _presentedViewController; }
 - (UIViewController *)presentingViewController { return _presentingViewController; }
 - (void)presentViewController:(UIViewController *)controller animated:(BOOL)animated completion:(UIViewControllerCompletion)completion

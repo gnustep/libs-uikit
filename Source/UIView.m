@@ -235,7 +235,13 @@ static BOOL UIKitAnimationsEnabled = YES;
 - (void)setNeedsDisplayInRect:(CGRect)rect { [_nativeView setNeedsDisplayInRect:rect]; }
 - (void)setNeedsLayout
 {
-  if (!_uiNeedsLayout) [self performSelector:@selector(layoutIfNeeded) withObject:nil afterDelay:0];
+  UIView *root = self;
+  while ([root superview]) root = [root superview];
+  /* Detached trees are laid out explicitly or when hosted. Avoid retaining
+     every transient view through a zero-delay run-loop timer. */
+  if (!root->_uiNeedsLayout && !root->_uiSolvingLayout && [root window])
+    [root performSelector:@selector(layoutIfNeeded) withObject:nil afterDelay:0];
+  root->_uiNeedsLayout = YES;
   _uiNeedsLayout = YES; [self setNeedsDisplay];
 }
 - (BOOL)_uiTreeNeedsLayout
