@@ -109,11 +109,30 @@ After building the framework, the examples can be built separately:
 make -C Examples
 ```
 
-The OpenGL example is optional:
+The optional spinning 3D cube demo uses six colored faces, perspective and depth
+testing, with UIKit Pause/Resume and Reset buttons. Resize the window to test
+layout. It requires desktop OpenGL development libraries (`libgl-dev` on Debian):
 
 ```sh
 make UIKIT_BUILD_OPENGL_EXAMPLE=yes
+openapp Examples/OpenGLExample.app
 ```
+
+Or build and run it with CMake:
+
+```sh
+cmake -S . -B build -DCMAKE_OBJC_COMPILER=clang \
+  -DBUILD_TESTING=ON -DUIKIT_BUILD_OPENGL_EXAMPLE=ON
+cmake --build build
+./build/OpenGLExample
+xvfb-run -a ctest --test-dir build -R UIKitCube --output-on-failure
+```
+
+The `--smoke` mode checks rendered cube pixels, animation, UIKit button actions
+and resizing, then exits. `UIOpenGLView` is a GNUstep desktop extension backed by
+`NSOpenGLView`, hosted inside a logical UIKit view. This demo uses explicit native
+integration; it is not an unchanged Apple UIKit application or an Android demo.
+Android still needs an application host and compatible graphics backend.
 
 ### CMake
 
@@ -239,6 +258,42 @@ list styles, sizing, search presentation, scrolling, images and controller behav
 
 ## Android build
 
+### Automatic setup on Debian/Linux x86_64
+
+Install host tools if needed, then run the bootstrap script:
+
+```sh
+sudo apt install build-essential cmake curl unzip xz-utils python3 pkg-config
+./setup-android.sh
+```
+
+[`setup-android.sh`](setup-android.sh) downloads pinned NDK r27c and GNUstep
+Android dependencies, verifies archive SHA-256 checksums, builds TIFF and GNUstep
+GUI, and invokes `build-android.sh`. It targets **x86_64, Android API 24** for an
+Intel/AMD emulator. CMake 3.21+ is required. No Android Studio or system GNUstep
+installation is needed. The NDK is subject to Google's
+[SDK license terms](https://developer.android.com/ndk/downloads).
+
+The first run downloads about 800 MB and needs several GB of disk space. All
+files stay local; the script does not use sudo or modify system installations.
+The output is `build-android/automatic/install/x86_64/lib/libUIKit.so`, with
+headers beside it under `include/UIKit`. Dependency libraries remain under
+`build-android/automatic/GNUstep/x86_64/lib`; they are needed when packaging an
+application. Per-stage logs are in `build-android/automatic/logs`.
+
+Rerun the command to reuse verified downloads and incremental builds. Use
+`--jobs 2` to limit parallelism, `--cache-dir PATH` to share downloaded archives,
+or `--work-dir PATH` for a separate build. Run `--help` for details. Build paths
+must not contain spaces or shell/make metacharacters, and a populated work
+directory must not be moved. A failed stage reports its log; a checksum mismatch
+requires replacing the named cached archive.
+
+This produces a framework library, not an APK or runnable cube demo. JPEG/PNG
+support is disabled in this GUI build. An Android application host and display
+backend are still required; emulator/device runtime behavior is unvalidated.
+
+### Build with an existing Android toolchain
+
 The Android configuration builds the library using the NDK CMake toolchain. It
 requires GNUstep Base, GNUstep GUI and libobjc already built for the same ABI:
 
@@ -276,6 +331,17 @@ The prefix should contain headers under `include/GNUstep` or `include`, and
 libraries under `lib` or `lib/<abi>`. Override `UIKIT_ANDROID_OBJC_RUNTIME` if the
 runtime differs from the default `gnustep-2.0`. Desktop validation described above
 does not establish Android runtime coverage for the new interfaces.
+
+An `x86_64`, API 24 cross-build has been validated with NDK r27c, the
+[GNUstep Android release-20250211 dependencies](https://github.com/gnustep/tools-android/releases/tag/release-20250211),
+GNUstep GUI 0.32.0 (revision `4716e3a1b`), and TIFF 4.7.0. The dependency
+release supplies Base and libobjc, but GUI and TIFF must be cross-built
+separately. This GUI build disabled JPEG and PNG support and supplied no display
+backend. CMake now initializes Objective-C with the NDK's C compiler target,
+enables blocks, and links the math library explicitly. The resulting
+`libUIKit.so` was verified as an Android ELF library; it has not been loaded in
+an emulator or on a device. This is build validation only, not a runnable APK
+or Android validation of the spinning cube example.
 
 ## Repository layout
 

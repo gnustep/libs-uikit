@@ -1,6 +1,15 @@
 cmake_minimum_required(VERSION 3.21)
 
-project(libs-uikit VERSION 0.2.0 LANGUAGES C OBJC)
+project(libs-uikit VERSION 0.2.0 LANGUAGES C)
+
+# The NDK initializes C/C++ only. Configure Objective-C before its compiler
+# probe so Clang targets Android rather than the Linux host.
+if(ANDROID)
+  set(CMAKE_OBJC_COMPILER "${CMAKE_C_COMPILER}")
+  set(CMAKE_OBJC_COMPILER_TARGET "${CMAKE_C_COMPILER_TARGET}")
+  set(CMAKE_OBJC_FLAGS_INIT "${CMAKE_C_FLAGS}")
+endif()
+enable_language(OBJC)
 
 if(ANDROID)
 
@@ -101,10 +110,10 @@ target_include_directories(UIKit PUBLIC
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Source)
 if(ANDROID)
   target_include_directories(UIKit PUBLIC ${GNUSTEP_BASE_INCLUDE_DIR} ${GNUSTEP_GUI_INCLUDE_DIR})
-  target_compile_options(UIKit PRIVATE -Wall -Wextra -fobjc-exceptions
+  target_compile_options(UIKit PRIVATE -Wall -Wextra -fobjc-exceptions -fblocks
     -fconstant-string-class=NSConstantString -fobjc-runtime=${UIKIT_ANDROID_OBJC_RUNTIME})
   target_link_options(UIKit PRIVATE -fobjc-runtime=${UIKIT_ANDROID_OBJC_RUNTIME} -Wl,--no-undefined)
-  target_link_libraries(UIKit PRIVATE ${GNUSTEP_GUI_LIBRARY} ${GNUSTEP_BASE_LIBRARY} ${OBJC_LIBRARY})
+  target_link_libraries(UIKit PRIVATE ${GNUSTEP_GUI_LIBRARY} ${GNUSTEP_BASE_LIBRARY} ${OBJC_LIBRARY} m)
 else()
   target_include_directories(UIKit PUBLIC ${GNUSTEP_OBJC_INCLUDE})
   target_compile_options(UIKit PUBLIC ${GNUSTEP_OBJC_FLAGS})
@@ -116,6 +125,17 @@ else()
   target_link_libraries(UIKitStudio PRIVATE UIKit)
   target_link_options(UIKitStudio PRIVATE "-Wl,-rpath,$<TARGET_FILE_DIR:UIKit>")
   include(CTest)
+  option(UIKIT_BUILD_OPENGL_EXAMPLE "Build the desktop spinning cube demo" OFF)
+  if(UIKIT_BUILD_OPENGL_EXAMPLE)
+    find_package(OpenGL REQUIRED)
+    add_executable(OpenGLExample Examples/OpenGLExample.m)
+    target_link_libraries(OpenGLExample PRIVATE UIKit OpenGL::GL)
+    target_link_options(OpenGLExample PRIVATE "-Wl,-rpath,$<TARGET_FILE_DIR:UIKit>")
+    if(BUILD_TESTING)
+      add_test(NAME UIKitCube COMMAND OpenGLExample --smoke)
+      set_tests_properties(UIKitCube PROPERTIES TIMEOUT 30)
+    endif()
+  endif()
   if(BUILD_TESTING)
     add_executable(UIKitStudioCapture Tests/StudioCapture.m Examples/UIKitStudio/StudioApp.m)
     target_link_libraries(UIKitStudioCapture PRIVATE UIKit)
