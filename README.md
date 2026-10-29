@@ -243,6 +243,26 @@ The Android configuration builds the library using the NDK CMake toolchain. It
 requires GNUstep Base, GNUstep GUI and libobjc already built for the same ABI:
 
 ```sh
+./build-android.sh --ndk /path/to/android-ndk \
+  --gnustep /path/to/android-gnustep-prefix
+```
+
+The script defaults to `arm64-v8a`, API 24, and a build directory of
+`build-android/arm64-v8a`. If `ANDROID_NDK_HOME` (or `ANDROID_NDK_ROOT`) and
+`GNUSTEP_ANDROID_ROOT` are already set, just run `./build-android.sh`.
+Use `--abi x86_64` with matching dependencies for an x86_64 emulator, `--jobs 4`
+to limit parallel jobs, or `--install-prefix "$PWD/android-install"` to also
+install the library and headers. Run `./build-android.sh --help` for all options.
+Relative paths are resolved from your current working directory. Use a fresh
+`--build-dir` when changing NDKs or Objective-C runtimes.
+
+The script does not build or download GNUstep dependencies, package an APK, or
+provide an Android application host or GUI backend. The Android configuration
+does not build the desktop examples or run their tests.
+
+Equivalent manual CMake commands:
+
+```sh
 cmake -S . -B build-android \
   -DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake" \
   -DANDROID_ABI=arm64-v8a \
