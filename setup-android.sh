@@ -11,6 +11,7 @@ Download NDK r27c and GNUstep Android release-20250211, cross-build TIFF
 4.7.0 and GNUstep GUI, then build/install UIKit locally. Linux x86_64 host
 only; target is x86_64, Android API 24. Produces a library, not an APK.
 
+  --cube            Also build the experimental Android cube host/backend
   --work-dir PATH   Toolchain, sources, logs and output (build-android/automatic)
   --cache-dir PATH  Verified download cache (build-android/downloads)
   --jobs NUMBER     Parallel build jobs (default: 4)
@@ -33,8 +34,10 @@ root=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 work="$root/build-android/automatic"
 cache="$root/build-android/downloads"
 jobs=4
+cube=no
 while [ "$#" -gt 0 ]; do
   case "$1" in
+    --cube) cube=yes; shift ;;
     -h|--help) usage; exit 0 ;;
     --work-dir|--cache-dir|--jobs)
       [ "$#" -ge 2 ] && [ -n "$2" ] || fail "Missing value for $1"
@@ -96,6 +99,11 @@ download tiff-4.7.0.tar.xz 273a0a73b1f0bed640afee4a5df0337357ced5b53d3d5d1c405b9
 gui_revision=4716e3a1b51e8c2cd6aaf00fbe89ff06f4a597ba
 download libs-gui-4716e3a1b.tar.gz dec79d2f5bc71ab27aba66b7e5949ad83b55f236d289aa684f0b6239888439d7 \
   "https://codeload.github.com/gnustep/libs-gui/tar.gz/$gui_revision"
+back_revision=36ac709b892caf697bf4d27624854dbbfdd19da4
+if [ "$cube" = yes ]; then
+  download libs-back-$back_revision.tar.gz 2558c5e8357ee633f1c8bee03bacbfbf51213f0c55c5f2aeaa630f6de2907641 \
+    "https://codeload.github.com/gnustep/libs-back/tar.gz/$back_revision"
+fi
 flock -u 8
 
 # Extraction is transactional. An interrupted extraction never becomes a source
@@ -117,6 +125,14 @@ unpack android-ndk-r27c-linux.zip android-ndk-r27c
 unpack GNUstep-Android-NDK-r27c-Linux.tar.xz GNUstep
 unpack tiff-4.7.0.tar.xz tiff-4.7.0
 unpack libs-gui-4716e3a1b.tar.gz "libs-gui-$gui_revision"
+backend_args=()
+if [ "$cube" = yes ]; then
+  unpack libs-back-$back_revision.tar.gz "libs-back-$back_revision"
+  backend_args=(--backend-source "$work/libs-back-$back_revision")
+  # Prefer the linked UIKit backend on Android. Keep normal bundle loading as
+  # fallback for library-only users. Patch only this private source checkout.
+  python3 "$root/Android/patch-gui.py" "$work/libs-gui-$gui_revision/Source/NSApplication.m"
+fi
 ndk="$work/android-ndk-r27c"
 prefix="$work/GNUstep/x86_64"
 
@@ -175,9 +191,13 @@ step tiff-install cmake --install "$work/tiff-build"
 )
 step uikit-build "$root/build-android.sh" --ndk "$ndk" --gnustep "$prefix" \
   --abi x86_64 --platform android-24 --runtime gnustep-2.0 \
-  --build-dir "$work/uikit-build" --install-prefix "$work/install/x86_64" --jobs "$jobs"
+  --build-dir "$work/uikit-build" --install-prefix "$work/install/x86_64" --jobs "$jobs" "${backend_args[@]}"
 step binary-inspection "$ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-readelf" \
   --file-header --notes --dynamic "$work/install/x86_64/lib/libUIKit.so"
 printf '\nBuilt Android x86_64/API 24 UIKit:\n  %s/install/x86_64/lib/libUIKit.so\n' "$work"
 printf 'Headers: %s/install/x86_64/include\nDependencies: %s/lib\nLogs: %s/logs\n' "$work" "$prefix" "$work"
-printf 'Build only: no APK, Android display backend, emulator or device runtime validation.\n'
+if [ "$cube" = yes ]; then
+  printf 'Cube host: %s/uikit-build/libUIKitCube.so (package with run-android-cube.sh)\n' "$work"
+else
+  printf 'Library only; use run-android-cube.sh for the experimental cube APK.\n'
+fi

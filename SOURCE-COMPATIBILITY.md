@@ -217,3 +217,22 @@ priority preferences still use declaration order rather than a full UIKit solver
 Integral frame coordinates are normalized within solver tolerance to keep scroll
 visibility checks consistent at shared edges. Desktop regressions cover minimum
 button heights and bottom-control scrolling after narrow/landscape resizing.
+
+
+## Experimental Android cube host
+
+[`run-android-cube.sh`](run-android-cube.sh) builds and deploys the shared
+`Examples/OpenGLExample.m` source using an optional Android backend in libs-uikit.
+The Android Activity supplies Canvas drawing and scheduling; GNUstep AppKit peers
+remain private behind the logical UIKit hierarchy. EGL hosts the GNUstep
+`UIOpenGLView` extension, with a small desktop-to-ES shim for the cube's GL calls.
+
+The API 24 x86_64 emulator smoke checks validate framebuffer pixels, animation,
+UIKit button actions through the Android touch bridge, cancellation, hierarchy
+and resizing. This is a GNUstep extension demo, not an unchanged Apple UIKit
+acceptance fixture. General Android widgets, text editing, images, menus,
+multitouch and multiple windows remain outside the qualified scope. The host
+uses rectangular clipping, simple font metrics and framebuffer readback; it is
+not a complete AppKit display backend or an optimized mobile compositor.
+See [the Android cube README](Examples/AndroidCube/README.md) for requirements,
+commands, bootstrap patches and runtime limitations.

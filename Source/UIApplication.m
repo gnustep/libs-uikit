@@ -168,7 +168,9 @@ int UIApplicationMain(int argc, char **argv, NSString *principalClassName, NSStr
     [(id<UIApplicationDelegate>)[application delegate] applicationDidFinishLaunching:application];
 
   [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidFinishLaunchingNotification object:application];
+#if !defined(UIKIT_ANDROID_HOST)
   [NSApp run];
+#endif
   RELEASE(pool);
   return 0;
 }

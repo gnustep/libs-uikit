@@ -19,6 +19,7 @@ Options (environment variables can supply defaults):
                          default: gnustep-2.0)
   --build-dir PATH       Build directory (default: build-android/<abi> in repo)
   --install-prefix PATH  Also install headers and library at this prefix
+  --backend-source PATH  GNUstep libs-back source (also build Android cube host)
   --jobs NUMBER          Parallel build jobs (default: CMake's default)
   -h, --help             Show this help
 
@@ -46,11 +47,12 @@ runtime=${UIKIT_ANDROID_OBJC_RUNTIME:-gnustep-2.0}
 build_dir=
 install_prefix=
 jobs=
+backend_source=
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
     -h|--help) usage; exit 0 ;;
-    --ndk|--gnustep|--abi|--platform|--runtime|--build-dir|--install-prefix|--jobs)
+    --ndk|--gnustep|--abi|--platform|--runtime|--build-dir|--install-prefix|--jobs|--backend-source)
       [ "$#" -ge 2 ] && [ -n "$2" ] || fail "Missing value for $1"
       case "$2" in --*) fail "Missing value for $1" ;; esac
       case "$1" in
@@ -62,6 +64,7 @@ while [ "$#" -gt 0 ]; do
         --build-dir) build_dir=$2 ;;
         --install-prefix) install_prefix=$2 ;;
         --jobs) jobs=$2 ;;
+        --backend-source) backend_source=$2 ;;
       esac
       shift 2 ;;
     *) fail "Unknown option: $1 (use --help)" ;;
@@ -92,8 +95,13 @@ if [ -n "$install_prefix" ]; then
   case "$install_prefix" in /*) ;; *) install_prefix="$PWD/$install_prefix" ;; esac
 fi
 
+if [ -n "$backend_source" ]; then
+  backend_source=$(CDPATH= cd -- "$backend_source" && pwd)
+fi
+
 cmake -S "$root" -B "$build_dir" \
   "-DCMAKE_TOOLCHAIN_FILE=$ndk/build/cmake/android.toolchain.cmake" \
+  "-DUIKIT_ANDROID_BACKEND_SOURCE=$backend_source" \
   "-DANDROID_ABI=$abi" \
   "-DANDROID_PLATFORM=$platform" \
   "-DGNUSTEP_ANDROID_ROOT=$gnustep" \

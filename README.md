@@ -131,8 +131,9 @@ xvfb-run -a ctest --test-dir build -R UIKitCube --output-on-failure
 The `--smoke` mode checks rendered cube pixels, animation, UIKit button actions
 and resizing, then exits. `UIOpenGLView` is a GNUstep desktop extension backed by
 `NSOpenGLView`, hosted inside a logical UIKit view. This demo uses explicit native
-integration; it is not an unchanged Apple UIKit application or an Android demo.
-Android still needs an application host and compatible graphics backend.
+integration; it is not an unchanged Apple UIKit application. An experimental
+[Android host](Examples/AndroidCube/README.md) builds the same source through
+libs-uikit using an Android Canvas/EGL backend.
 
 ### CMake
 
@@ -258,6 +259,20 @@ list styles, sizing, search presentation, scrolling, images and controller behav
 
 ## Android build
 
+### Run the cube in an Android emulator
+
+With an Android SDK and an x86_64 AVD installed:
+
+```sh
+./run-android-cube.sh --sdk /path/to/android-sdk --avd UIKitCube_API24
+```
+
+This builds the libraries and existing Objective-C cube, signs an APK, installs
+it and waits for its first frame. See the [Android cube instructions](Examples/AndroidCube/README.md)
+for SDK prerequisites, software emulation, output paths and backend limitations.
+This is a narrow experimental runtime, not general Android API coverage.
+
+
 ### Automatic setup on Debian/Linux x86_64
 
 Install host tools if needed, then run the bootstrap script:
@@ -288,9 +303,9 @@ must not contain spaces or shell/make metacharacters, and a populated work
 directory must not be moved. A failed stage reports its log; a checksum mismatch
 requires replacing the named cached archive.
 
-This produces a framework library, not an APK or runnable cube demo. JPEG/PNG
-support is disabled in this GUI build. An Android application host and display
-backend are still required; emulator/device runtime behavior is unvalidated.
+The default setup produces a framework library. JPEG/PNG support is disabled
+in this GUI build. Use `run-android-cube.sh` for the optional Android host and APK;
+`setup-android.sh --cube` builds its native libraries without packaging.
 
 ### Build with an existing Android toolchain
 
@@ -312,7 +327,7 @@ Relative paths are resolved from your current working directory. Use a fresh
 `--build-dir` when changing NDKs or Objective-C runtimes.
 
 The script does not build or download GNUstep dependencies, package an APK, or
-provide an Android application host or GUI backend. The Android configuration
+include the optional cube host by default. The Android configuration
 does not build the desktop examples or run their tests.
 
 Equivalent manual CMake commands:
@@ -336,12 +351,15 @@ An `x86_64`, API 24 cross-build has been validated with NDK r27c, the
 [GNUstep Android release-20250211 dependencies](https://github.com/gnustep/tools-android/releases/tag/release-20250211),
 GNUstep GUI 0.32.0 (revision `4716e3a1b`), and TIFF 4.7.0. The dependency
 release supplies Base and libobjc, but GUI and TIFF must be cross-built
-separately. This GUI build disabled JPEG and PNG support and supplied no display
-backend. CMake now initializes Objective-C with the NDK's C compiler target,
-enables blocks, and links the math library explicitly. The resulting
-`libUIKit.so` was verified as an Android ELF library; it has not been loaded in
-an emulator or on a device. This is build validation only, not a runnable APK
-or Android validation of the spinning cube example.
+separately. The default library build disables JPEG and PNG support and has no
+display backend. The optional cube host adds the Android Canvas/EGL backend and
+uses GNUstep backend revision `36ac709b` for generic graphics-state support.
+
+The complete build/package/deploy path and native `--smoke` checks passed on an
+Android API 24 x86_64 emulator using software emulation. Checks cover colored
+framebuffer pixels, animation, Pause/Reset/Resume through UIKit actions, cancelled
+touches, logical subviews and resizing. This validates the cube path, not the
+broader UIKit catalog, Apple source parity, physical Android devices or other ABIs.
 
 ## Repository layout
 

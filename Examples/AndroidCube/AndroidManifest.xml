@@ -1,0 +1,12 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="org.gnustep.uikit.cube" android:versionCode="1" android:versionName="0.1">
+  <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="28" />
+  <uses-feature android:glEsVersion="0x00010001" android:required="true" />
+  <application android:label="UIKit Spinning Cube" android:theme="@android:style/Theme.Material.Light.NoActionBar" android:debuggable="true" android:extractNativeLibs="true" android:allowBackup="false">
+    <activity android:name="org.gnustep.uikit.UIKitActivity" android:exported="true" android:configChanges="orientation|screenSize|keyboardHidden">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity>
+  </application>
+</manifest>

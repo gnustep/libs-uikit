@@ -4,6 +4,11 @@ const UIWindowLevel UIWindowLevelStatusBar = 1000;
 const UIWindowLevel UIWindowLevelAlert = 2000;
 
 @implementation _UIKitWindowPeer
+#if defined(UIKIT_ANDROID_HOST)
+/* Android supplies the viewport after launch. Preserve the requested initial
+   size so UIKit autoresizing sees the full transition to that viewport. */
+- (NSRect)constrainFrameRect:(NSRect)frame toScreen:(NSScreen *)screen { return frame; }
+#endif
 - (void)close { [owner _nativeWindowWillClose]; [super close]; }
 @end
 
